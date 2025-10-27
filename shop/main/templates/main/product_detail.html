@@ -1,0 +1,132 @@
+{% extends 'main/base.html' %} 
+{% load static %} 
+{% block title %}
+{{product.name|default:"EliteMarket" }}
+{% endblock %} 
+{% block content %}
+<div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="lg:col-span-1 flex items-center">
+      {% if product.image %}
+      <div class="w-full flex items-center justify-center h-full">
+        <img
+          src="{{ product.image.url }}"
+          alt="{{ product.name }}"
+          class="w-full rounded-2xl object-contain max-h-64 sm:max-h-96"
+        />
+      </div>
+      {% else %}
+      <div class="w-full h-64 bg-gray-100 rounded-2xl flex items-center justify-center">
+        <i class="fas fa-box-open text-6xl text-gray-300"></i>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="lg:col-span-2 space-y-4">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">{{ product.name }}</h1>
+          <div class="mt-2 text-sm text-gray-500">
+            {% if product.category %}
+            <a
+              href="{{ product.category.get_absolute_url }}"
+              class="inline-block px-3 py-1 bg-teal-50 text-teal-600 rounded-full font-semibold mr-2">
+              {{ product.category.name }}
+            </a>
+            {% endif %}
+            <span class="text-gray-400 ml-2"> 👁 {{ product.views|default:0 }}</span>
+            {% if product.created_at %}
+            <span class="text-gray-400 ml-4"> 📅 {{ product.created_at|date:"d.m.Y" }}</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="text-right">
+          <div class="text-2xl font-bold text-gray-900">
+            {{ product.price }} ₴
+          </div>
+        </div>
+      </div>
+
+      {% if product.description %}
+      <div class="prose prose-sm max-w-none text-gray-700">
+        {{ product.description|linebreaksbr }}
+      </div>
+      {% endif %}
+      <div
+        class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mt-4">
+        <form
+          method="post"
+          action="#"
+          class="inline"
+          onsubmit="event.preventDefault(); alert('Додавання до кошика наразі тимчасово недоступне.');"
+        >
+          {% csrf_token %}
+          <input type="hidden" name="product_id" value="{{ product.id }}" />
+          <button
+            type="submit"
+            class="w-full sm:w-auto px-5 py-3 bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-semibold rounded-xl shadow transition hover:bg-teal-600 flex items-center justify-center hover:shadow-lg transform hover:scale-105 transition-all duration-300"
+            title="Тимчасово недоступно"
+          >
+            <i class="fas fa-cart-plus mr-2"></i> Додати до кошика
+          </button>
+        </form>
+
+        <a
+          href="{% url 'main:product_list' %}"
+          class="w-full sm:w-auto px-4 py-3 border border-gray-200 rounded-xl text-md text-center text-gray-700 hover:bg-gray-200 transition"
+        >
+          <i class="fas fa-arrow-left mr-2"></i> Повернутися до каталогу
+        </a>
+      </div>
+
+      {% if product.sku or product.stock %}
+      <div class="mt-4 text-sm text-gray-500">
+        {% if product.sku %}
+        <div>Артикул: {{ product.sku }}</div>
+        {% endif %} 
+        {% if product.stock is not None %}
+        <div>На складі: {{ product.stock }}</div>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if related_products %}
+  <section class="mt-12">
+    <h2 class="text-xl font-bold text-gray-900 mb-4">Схожі товари</h2>
+    <div
+      class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+    >
+      {% for rp in related_products %}
+      <a
+        href="{{ rp.get_absolute_url }}"
+        class="group block bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-lg transition"
+      >
+        <div class="w-full h-40 flex items-center justify-center mb-3">
+          {% if rp.image %}
+          <img
+            src="{{ rp.image.url }}"
+            alt="{{ rp.name }}"
+            class="object-contain max-h-28 sm:max-h-36 w-full"
+          />
+          {% else %}
+          <div
+            class="w-full h-36 bg-gray-100 flex items-center justify-center rounded-lg"
+          >
+            <i class="fas fa-box-open text-4xl text-gray-300"></i>
+          </div>
+          {% endif %}
+        </div>
+        <h3 class="text-sm font-semibold text-gray-900 line-clamp-2">
+          {{ rp.name }}
+        </h3>
+        <div class="mt-2 text-sm font-bold text-gray-900">{{ rp.price }} ₴</div>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,13 +1,174 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uk">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{% block title %}Shop{% endblock %}</title>
+    <title>{% block title %}EliteMarket{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    <link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#0d9488",
+              secondary: "#10b981",
+            },
+          },
+        },
+      };
+    </script>
   </head>
-  <body>
-    {% block content %} {% endblock %}
+
+  <body class="min-h-screen flex flex-col bg-slate-50 text-gray-900 antialiased">
+    <header class="bg-white/80 backdrop-blur-xl sticky top-0 z-50 border-b border-gray-200/50 shadow-lg shadow-teal-500/5">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-20">
+          <a href="/" class="flex items-center gap-3 group">
+            <img
+              src="{% static 'images/logo.png' %}"
+              alt="EliteMarket Logo"
+              class="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain transition-transform duration-200"
+            />
+            <div>
+              <div class="text-lg sm:text-xl font-bold text-teal-600">
+                Elite Market
+              </div>
+              <div class="text-[11px] sm:text-xs text-gray-500 font-medium">
+                Якість та стиль
+              </div>
+            </div>
+          </a>
+
+          <div class="flex items-center gap-4">
+            {% if not product %}
+            <div class="hidden md:block relative">
+              <button
+                id="categoriesBtnDesktop"
+                aria-expanded="false"
+                aria-controls="categoriesDropdownDesktop"
+                class="px-3 py-2 rounded-xl text-sm font-semibold text-gray-700 hover:text-teal-600 hover:bg-teal-50 transition flex items-center gap-2">
+                <i class="fas fa-bars"></i> Категорії
+                <i class="fas fa-chevron-down text-xs ml-1"></i>
+              </button>
+              <div
+                id="categoriesDropdownDesktop"
+                class="hidden absolute top-full left-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden"
+              >
+                <div class="p-2">
+                  <a
+                    href="{% url 'main:product_list' %}"
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-gray-700 hover:text-teal-600 hover:bg-teal-50 transition"
+                  >
+                    <i class="fas fa-th-large w-5"></i> Всі категорії
+                  </a>
+                  {% if categories %}
+                  <div class="my-2 border-t border-gray-100"></div>
+                  {% for category in categories %}
+                  <a
+                    href="{{ category.get_absolute_url }}"
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 hover:text-teal-600 hover:bg-teal-50 transition"
+                  >
+                    <i class="fas fa-tag w-5"></i> {{ category.name }}
+                  </a>
+                  {% endfor %} {% else %}
+                  <div class="px-4 py-3 text-sm text-gray-500">
+                    Категорій немає
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            {% endif %}
+
+            <nav class="hidden md:flex items-center gap-6">
+              <a
+                href="{% url 'main:product_list' %}"
+                class="text-sm font-semibold text-gray-700 hover:text-teal-600 transition"
+                >Каталог</a
+              >
+            </nav>
+
+            <a
+              href="{% url 'main:product_list' %}"
+              class="md:hidden text-sm font-semibold text-gray-700 hover:text-teal-600 transition px-3 py-2 rounded-lg border border-transparent hover:bg-gray-100"
+              >Каталог
+            </a>
+
+            {% if not product %}
+            <button
+              id="burgerBtn"
+              class="md:hidden p-2 rounded-lg bg-white/90 border border-gray-200 text-gray-700 hover:text-teal-600 hover:shadow transition"
+              title="Меню"
+            >
+              <i class="fas fa-bars text-lg"></i>
+            </button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </header>
+
+    {% if not product %}
+    <div
+      id="mobileOverlay"
+      class="fixed inset-0 z-40 hidden bg-black/50 transition-opacity">
+    </div>
+
+    <div
+      id="mobileMenu"
+      class="mobile-menu fixed top-0 right-0 h-full bg-white z-50 shadow-2xl rounded-l-2xl flex flex-col"
+    >
+      <div
+        class="p-4 flex items-center justify-between border-b border-gray-100"
+      >
+        <div class="text-lg font-semibold text-gray-800">Меню</div>
+        <button
+          id="closeMenuBtn"
+          class="p-2 text-gray-600 hover:text-teal-600"
+          title="Закрити"
+        >
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+      <div class="p-4 overflow-auto">
+        <a
+          href="{% url 'main:product_list' %}"
+          class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-gray-700 hover:text-teal-600 hover:bg-teal-50 transition"
+        >
+          <i class="fas fa-th-large w-5"></i> Всі категорії
+        </a>
+        {% if categories %}
+        <div class="my-2 border-t border-gray-100"></div>
+        {% for category in categories %}
+        <a
+          href="{{ category.get_absolute_url }}"
+          class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 hover:text-teal-600 hover:bg-teal-50 transition"
+        >
+          <i class="fas fa-tag w-5"></i> {{ category.name }}
+        </a>
+        {% endfor %} {% else %}
+        <div class="px-4 py-3 text-sm text-gray-500">Категорій немає</div>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+    <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-12">
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-gray-900 text-gray-400 py-6">
+      <div class="max-w-7xl mx-auto px-4 text-center">
+        <p class="text-sm">
+          &copy; {{ now.year }} EliteMarket — Всі права захищені.
+        </p>
+      </div>
+    </footer>
+
+    <script src="{% static 'js/script.js' %}"></script>
   </body>
 </html>

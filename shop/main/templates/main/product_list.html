@@ -1,0 +1,208 @@
+{% extends 'main/base.html' %} 
+{% load static %} 
+{% block title %} 
+{% if category %}{{ category.name }}{% else %}Каталог товарів{% endif %} 
+{% endblock%}
+{% block content %}
+
+<div class="mb-10">
+  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+    <div>
+      <h1 class="text-4xl font-bold bg-gradient-to-r from-teal-600 via-emerald-600 to-green-600 bg-clip-text text-transparent mb-2">
+        {% if category %}{{ category.name }}{% else %}Каталог товарів{% endif %}
+      </h1>
+      <p class="text-gray-600">Знайдіть ідеальний товар для себе</p>
+    </div>
+
+    <div class="flex items-center gap-2 bg-white/80 backdrop-blur-sm px-2 py-3 rounded-2xl shadow-lg border border-gray-200/50 overflow-x-auto">
+      <div class="flex items-center gap-2 px-2">
+        <span class="text-sm text-gray-600 font-semibold mr-2 whitespace-nowrap"
+          >Сортувати:</span>
+
+        <a
+          href="{{ request.path }}?sort=new"
+          class="min-w-max px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 whitespace-nowrap {% if current_sort == 'new' %}bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md{% else %}text-gray-700 bg-gray-100 hover:bg-gray-200{% endif %}"
+        >
+          <i class="far fa-star mr-1"></i> Нові
+        </a>
+        <a
+          href="{{ request.path }}?sort=old"
+          class="min-w-max px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 whitespace-nowrap {% if current_sort == 'old' %}bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md{% else %}text-gray-700 bg-gray-100 hover:bg-gray-200{% endif %}"
+        >
+          <i class="fas fa-archive mr-1"></i> Старі
+        </a>
+        <a
+          href="{{ request.path }}?sort=popular"
+          class="min-w-max px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 whitespace-nowrap {% if current_sort == 'popular' %}bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md{% else %}text-gray-700 bg-gray-100 hover:bg-gray-200{% endif %}"
+        >
+          <i class="fas fa-fire mr-1"></i> Популярні
+        </a>
+        <a
+          href="{{ request.path }}?sort=price_low"
+          class="min-w-max px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 whitespace-nowrap {% if current_sort == 'price_low' %}bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md{% else %}text-gray-700 bg-gray-100 hover:bg-gray-200{% endif %}"
+        >
+          <i class="fas fa-arrow-up mr-1"></i> Ціна
+        </a>
+        <a
+          href="{{ request.path }}?sort=price_high"
+          class="min-w-max px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 whitespace-nowrap {% if current_sort == 'price_high' %}bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md{% else %}text-gray-700 bg-gray-100 hover:bg-gray-200{% endif %}"
+        >
+          <i class="fas fa-arrow-down mr-1"></i> Ціна
+        </a>
+        <a
+          href="{{ request.path }}?sort=name"
+          class="min-w-max px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 whitespace-nowrap {% if current_sort == 'name' %}bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md{% else %}text-gray-700 bg-gray-100 hover:bg-gray-200{% endif %}"
+        >
+          <i class="fas fa-font mr-1"></i> Назва
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+>
+  {% for product in products %}
+  <article
+    class="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border border-gray-100 transform hover:-translate-y-2"
+  >
+    {% if product.featured %}
+    <div class="absolute top-3 left-3 z-10">
+      <div class="relative">
+        <div
+          class="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full blur-sm"
+        ></div>
+        <span
+          class="relative bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1"
+        >
+          <i class="fas fa-crown"></i> Хіт
+        </span>
+      </div>
+    </div>
+    {% endif %} 
+    {% if product.image %}
+    <a
+      href="{{ product.get_absolute_url }}"
+      class="block relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100"
+    >
+      <div
+        class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+      </div>
+      <img
+        src="{{ product.image.url }}"
+        alt="{{ product.name }}"
+        class="w-full h-44 sm:h-56 object-contain p-4 group-hover:scale-110 transition-transform duration-700"
+      />
+    </a>
+    {% else %}
+    <div
+      class="w-full h-56 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"
+    >
+      <i class="fas fa-box-open text-6xl text-gray-300"></i>
+    </div>
+    {% endif %}
+
+    <div class="p-5 space-y-3">
+      <div class="flex items-center gap-2 text-xs">
+        {% if product.category %}
+        <a
+          href="{{ product.category.get_absolute_url }}"
+          class="px-3 py-1 bg-teal-50 text-teal-600 rounded-full font-semibold hover:bg-teal-100 transition-colors"
+        >
+          {{ product.category.name }}
+        </a>
+        {% else %}
+        <span
+          class="px-3 py-1 bg-gray-100 text-gray-500 rounded-full font-semibold"
+          >Без категорії</span
+        >
+        {% endif %}
+
+        <div class="ml-auto flex items-center gap-1 text-gray-400">
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+            ></path>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+            ></path>
+          </svg>
+          <span class="text-xs font-medium">{{ product.views|default:0 }}</span>
+        </div>
+      </div>
+
+      <a href="{{ product.get_absolute_url }}" class="block">
+        <h3
+          class="text-lg font-bold text-gray-900 transition-colors line-clamp-2"
+        >
+          {{ product.name }}
+        </h3>
+      </a>
+
+      {% if product.description %}
+      <p class="text-sm text-gray-600 leading-relaxed line-clamp-2">
+        {{ product.description|truncatewords:12 }}
+      </p>
+      {% endif %}
+
+      <div
+        class="pt-3 border-t border-gray-100 flex items-center justify-between gap-3"
+      >
+        <div
+          class="text-2xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent"
+        >
+          {{ product.price }} ₴
+        </div>
+        <a
+          href="{{ product.get_absolute_url }}"
+          class="px-4 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 text-white text-sm font-semibold rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300"
+        >
+          Деталі
+        </a>
+      </div>
+    </div>
+
+    <div
+      class="absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-500 pointer-events-none">
+      <div
+        class="absolute inset-0 rounded-2xl bg-gradient-to-r from-teal-500 via-emerald-500 to-green-500 blur-xl opacity-0"
+      ></div>
+    </div>
+  </article>
+  {% empty %}
+  <div
+    class="col-span-full flex flex-col items-center justify-center py-20 text-center"
+  >
+    <div
+      class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-6"
+    >
+      <i class="fas fa-inbox text-5xl text-gray-300"></i>
+    </div>
+    <h3 class="text-2xl font-bold text-gray-800 mb-2">Товарів не знайдено</h3>
+    <p class="text-gray-600 max-w-md">
+      На жаль, за вашим запитом товарів немає. Спробуйте змінити фільтри або
+      повернутися до каталогу.
+    </p>
+    <a
+      href="{% url 'main:product_list' %}"
+      class="mt-6 px-6 py-3 bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+    >
+      <i class="fas fa-arrow-left mr-2"></i> До каталогу
+    </a>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}
