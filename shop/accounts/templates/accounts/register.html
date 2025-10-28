@@ -1,0 +1,109 @@
+{% extends 'main/base.html' %} 
+{% load static %} 
+{% block title %} Реєстрація {% endblock %} 
+{% block content %}
+<div class="max-w-md mx-auto mt-16 bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+  <h2 class="text-2xl font-bold text-gray-900 mb-4 text-center">
+    Створити акаунт
+  </h2>
+
+  {% if form.non_field_errors %}
+  <div class="mb-4 text-sm text-red-700 bg-red-50 border border-red-100 rounded-md p-3">
+    Помилка при реєстрації. Перевірте введені дані та спробуйте ще раз.
+  </div>
+  {% endif %}
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    <div class="mb-4">
+      <label
+        class="block text-sm font-medium text-gray-700 mb-1"
+        for="id_username"
+        >Логін</label
+      >
+      <input
+        id="id_username"
+        name="username"
+        type="text"
+        value="{{ form.username.value|default_if_none:'' }}"
+        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-300"
+        autocomplete="username"
+        required
+      />
+      {% if form.username.errors %}
+      <p class="mt-2 text-xs text-red-600">
+        Неприпустимий логін. Спробуйте інше ім'я користувача.
+      </p>
+      <p class="mt-1 text-xs text-red-600">
+        Вимога: логін має бути мінімум 3 символи, містити лише літери, цифри або
+        знак підкреслення.
+      </p>
+      {% endif %}
+    </div>
+
+    <div class="mb-4">
+      <label
+        class="block text-sm font-medium text-gray-700 mb-1"
+        for="id_password1"
+        >Пароль</label
+      >
+      <input
+        id="id_password1"
+        name="password1"
+        type="password"
+        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-300"
+        autocomplete="new-password"
+        required
+      />
+      {% if form.password1.errors %}
+      <p class="mt-2 text-xs text-red-600">
+        Пароль не відповідає вимогам. Оберіть інший пароль.
+      </p>
+      <p class="mt-1 text-xs text-red-600">
+        Вимога: пароль має бути щонайменше 8 символів та містити не лише цифри.
+      </p>
+      {% endif %}
+    </div>
+
+    <div class="mb-4">
+      <label
+        class="block text-sm font-medium text-gray-700 mb-1"
+        for="id_password2"
+        >Підтвердження пароля</label
+      >
+      <input
+        id="id_password2"
+        name="password2"
+        type="password"
+        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-300"
+        autocomplete="new-password"
+        required
+      />
+      {% if form.password2.errors %}
+      <p class="mt-2 text-xs text-red-600">
+        Паролі не співпадають. Перевірте введені паролі.
+      </p>
+      <p class="mt-1 text-xs text-red-600">
+        Переконайтесь, що обидва паролі однакові.
+      </p>
+      {% endif %}
+    </div>
+
+    <div class="flex items-center justify-between gap-3 mt-6">
+      <button
+        type="submit"
+        class="flex-1 px-4 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-semibold rounded-lg shadow hover:opacity-95 hover:-translate-y-0.5 transition-all duration-150"
+      >
+        Зареєструватися
+      </button>
+      <a
+        href="{% url 'accounts:login' %}"
+        class="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold rounded-lg border border-teal-600 text-teal-600 hover:bg-teal-50 transition shadow-sm"
+      >
+        Увійти
+      </a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -7,8 +7,7 @@
     <title>{% block title %}EliteMarket{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="{% static 'css/style.css' %}" />
-    <link rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
     <script>
       tailwind.config = {
         theme: {
@@ -43,14 +42,15 @@
             </div>
           </a>
 
-          <div class="flex items-center gap-4">
+          <div class="flex items-center gap-6">
             {% if not product %}
-            <div class="hidden md:block relative">
+            <div class="hidden md:block relative -ml-4">
               <button
                 id="categoriesBtnDesktop"
                 aria-expanded="false"
                 aria-controls="categoriesDropdownDesktop"
-                class="px-3 py-2 rounded-xl text-sm font-semibold text-gray-700 hover:text-teal-600 hover:bg-teal-50 transition flex items-center gap-2">
+                class="px-3 py-2 rounded-xl text-sm font-semibold text-gray-700 hover:text-teal-600 hover:bg-teal-50 transition flex items-center gap-2"
+              >
                 <i class="fas fa-bars"></i> Категорії
                 <i class="fas fa-chevron-down text-xs ml-1"></i>
               </button>
@@ -70,7 +70,7 @@
                   {% for category in categories %}
                   <a
                     href="{{ category.get_absolute_url }}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 hover:text-teal-600 hover:bg-teal-50 transition"
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 hover:text-teal-600 hover:bg-teal-50 transition -ml-2"
                   >
                     <i class="fas fa-tag w-5"></i> {{ category.name }}
                   </a>
@@ -84,21 +84,60 @@
             </div>
             {% endif %}
 
-            <nav class="hidden md:flex items-center gap-6">
+            <nav class="hidden md:flex items-center gap-6 -ml-4">
               <a
                 href="{% url 'main:product_list' %}"
-                class="text-sm font-semibold text-gray-700 hover:text-teal-600 transition"
-                >Каталог</a
-              >
+                class="text-sm font-semibold text-gray-700 hover:text-teal-600 transition">
+                Каталог
+              </a>
             </nav>
 
-            <a
-              href="{% url 'main:product_list' %}"
-              class="md:hidden text-sm font-semibold text-gray-700 hover:text-teal-600 transition px-3 py-2 rounded-lg border border-transparent hover:bg-gray-100"
-              >Каталог
-            </a>
+            <div class="hidden md:flex items-center gap-2 md:ml-6">
+              {% if user.is_authenticated %} {% if user.is_staff %}
+              <a
+                href="{% url 'admin:index' %}"
+                class="px-3 py-2 rounded-lg text-sm bg-gray-100 text-gray-800 hover:bg-gray-200">
+                Адмін панель
+              </a>
+              {% endif %}
+              <a
+                href="{% url 'accounts:profile' %}"
+                class="px-3 py-2 rounded-lg text-sm bg-white/90 border border-gray-200 text-gray-800 hover:bg-gray-50">
+                Профіль
+              </a>
+              <form
+                method="post"
+                action="{% url 'accounts:logout' %}"
+                class="inline"
+              >
+                {% csrf_token %}
+                <button
+                  type="submit"
+                  class="px-3 py-2 rounded-lg text-sm bg-red-600 text-white hover:bg-red-700"
+                >
+                  Вийти
+                </button>
+              </form>
+              {% else %}
+              <a
+                href="{% url 'accounts:login' %}"
+                class="px-3 py-2 rounded-lg text-sm bg-white/90 border border-gray-200 text-gray-800 hover:bg-gray-50">
+                Вхід
+              </a>
+              <a
+                href="{% url 'accounts:register' %}"
+                class="px-3 py-2 rounded-lg text-sm bg-gradient-to-r from-teal-600 to-emerald-600 text-white">
+                Реєстрація
+              </a>
+              {% endif %}
+            </div>
 
             {% if not product %}
+            <a
+              href="{% url 'main:product_list' %}"
+              class="md:hidden text-sm font-semibold text-gray-700 hover:text-teal-600 transition px-3 py-2 rounded-lg border border-transparent hover:bg-gray-100 mr-2">
+              Каталог
+            </a>
             <button
               id="burgerBtn"
               class="md:hidden p-2 rounded-lg bg-white/90 border border-gray-200 text-gray-700 hover:text-teal-600 hover:shadow transition"
@@ -113,25 +152,24 @@
     </header>
 
     {% if not product %}
-    <div
-      id="mobileOverlay"
-      class="fixed inset-0 z-40 hidden bg-black/50 transition-opacity">
-    </div>
+    <div id="mobileOverlay" class="fixed inset-0 z-40 hidden bg-black/50 transition-opacity"></div>
 
-    <div
-      id="mobileMenu"
-      class="mobile-menu fixed top-0 right-0 h-full bg-white z-50 shadow-2xl rounded-l-2xl flex flex-col"
-    >
-      <div
-        class="p-4 flex items-center justify-between border-b border-gray-100"
-      >
-        <div class="text-lg font-semibold text-gray-800">Меню</div>
+    <div id="mobileMenu" class="mobile-menu fixed top-0 right-0 h-full bg-white z-50 shadow-2xl rounded-l-2xl flex flex-col">
+      <div class="menu-header p-4 flex items-center justify-between border-b border-gray-100">
+        <a href="/" class="flex items-center gap-3">
+          <img
+            src="{% static 'images/logo.png' %}"
+            alt="Logo"
+            class="w-8 h-8 object-contain rounded-md"
+          />
+          <div class="text-base font-semibold text-gray-900">Elite Market</div>
+        </a>
         <button
           id="closeMenuBtn"
-          class="p-2 text-gray-600 hover:text-teal-600"
-          title="Закрити"
+          class="close-menu-btn p-2 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
+          aria-label="Закрити меню"
         >
-          <i class="fas fa-times text-xl"></i>
+          <i class="fas fa-times text-lg"></i>
         </button>
       </div>
       <div class="p-4 overflow-auto">
@@ -153,6 +191,42 @@
         {% endfor %} {% else %}
         <div class="px-4 py-3 text-sm text-gray-500">Категорій немає</div>
         {% endif %}
+
+        <div class="mt-4 border-t border-gray-100 pt-3">
+          {% if user.is_authenticated %} {% if user.is_staff %}
+          <a
+            href="{% url 'admin:index' %}"
+            class="block auth-btn text-sm font-medium bg-gray-100 text-gray-800 hover:bg-gray-50">
+            Адмін панель
+          </a>
+          {% endif %}
+          <a
+            href="{% url 'accounts:profile' %}"
+            class="block auth-btn text-sm font-medium border border-gray-200 text-gray-800 hover:bg-gray-50">
+            Профіль
+          </a>
+          <form method="post" action="{% url 'accounts:logout' %}" class="">
+            {% csrf_token %}
+            <button
+              type="submit"
+              class="auth-btn bg-red-600 text-white text-sm hover:bg-red-700"
+            >
+              Вийти
+            </button>
+          </form>
+          {% else %}
+          <a
+            href="{% url 'accounts:login' %}"
+            class="block auth-btn text-sm font-medium text-gray-800 hover:bg-gray-50">
+            Вхід
+          </a>
+          <a
+            href="{% url 'accounts:register' %}"
+            class="block auth-btn mt-2 text-sm font-medium bg-gradient-to-r from-teal-600 to-emerald-600 text-white hover:opacity-95">
+            Реєстрація
+          </a>
+          {% endif %}
+        </div>
       </div>
     </div>
     {% endif %}

@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'main',
+	'accounts',
 ]
 
 MIDDLEWARE = [
@@ -48,6 +49,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+	'accounts.views.AdminAccessRedirectMiddleware',
 ]
 
 ROOT_URLCONF = 'shop.urls'
@@ -122,3 +124,8 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Налаштування авторизації
+LOGIN_URL = 'accounts:login'
+LOGIN_REDIRECT_URL = 'main:product_list'
+LOGOUT_REDIRECT_URL = 'main:product_list'

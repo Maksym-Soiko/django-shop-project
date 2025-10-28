@@ -1,0 +1,65 @@
+{% extends 'main/base.html' %} 
+{% load static %} 
+{% block title %} Профіль — {{ user.username }} 
+{% endblock %} 
+{% block content %}
+<div class="max-w-3xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+  <div class="bg-white rounded-2xl shadow p-6">
+    <h1 class="text-2xl font-bold text-gray-900 mb-4">Профіль користувача</h1>
+
+    <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <dt class="text-sm text-gray-500">Ім'я користувача</dt>
+        <dd class="mt-1 text-lg font-medium text-gray-900">
+          {{ user.username }}
+        </dd>
+      </div>
+
+      <div>
+        <dt class="text-sm text-gray-500">Email</dt>
+        <dd class="mt-1 text-lg font-medium text-gray-900">
+          {{ user.email|default:"Не вказано" }}
+        </dd>
+      </div>
+
+      <div>
+        <dt class="text-sm text-gray-500">Дата реєстрації</dt>
+        <dd class="mt-1 text-lg text-gray-900">
+          {{ user.date_joined|date:"d.m.Y H:i" }}
+        </dd>
+      </div>
+
+      <div>
+        <dt class="text-sm text-gray-500">Останній вхід</dt>
+        <dd class="mt-1 text-lg text-gray-900">
+          {% if user.last_login %} {{ user.last_login|date:"d.m.Y H:i" }} 
+		  {% else %} — 
+		  {% endif %}
+        </dd>
+      </div>
+    </dl>
+
+    <div class="mt-6 flex flex-col sm:flex-row gap-3">
+      <a
+        href="{% url 'main:product_list' %}"
+        class="w-full sm:w-auto inline-block px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 text-center"
+        >Повернутися до товарів</a
+      >
+
+      <form
+        method="post"
+        action="{% url 'accounts:logout' %}"
+        class="w-full sm:w-auto inline"
+      >
+        {% csrf_token %}
+        <button
+          type="submit"
+          class="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-center"
+        >
+          Вийти
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
