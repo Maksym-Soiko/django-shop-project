@@ -1,0 +1,44 @@
+<div class="flex items-center gap-2 bg-white/80 backdrop-blur-sm px-2 py-3 rounded-2xl shadow-lg border border-gray-200/50 overflow-x-auto">
+  <div class="flex items-center gap-2 px-2">
+    <span class="text-sm text-gray-600 font-semibold mr-2 whitespace-nowrap">
+      Сортувати:
+    </span>
+
+    <a
+      href="{{ request.path }}?sort=new{% if search_query %}&q={{ search_query }}{% endif %}"
+      class="min-w-max px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 whitespace-nowrap {% if current_sort == 'new' %}bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md{% else %}text-gray-700 bg-gray-100 hover:bg-gray-200{% endif %}"
+    >
+      <i class="far fa-star mr-1"></i> Нові
+    </a>
+    <a
+      href="{{ request.path }}?sort=old{% if search_query %}&q={{ search_query }}{% endif %}"
+      class="min-w-max px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 whitespace-nowrap {% if current_sort == 'old' %}bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md{% else %}text-gray-700 bg-gray-100 hover:bg-gray-200{% endif %}"
+    >
+      <i class="fas fa-archive mr-1"></i> Старі
+    </a>
+    <a
+      href="{{ request.path }}?sort=popular{% if search_query %}&q={{ search_query }}{% endif %}"
+      class="min-w-max px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 whitespace-nowrap {% if current_sort == 'popular' %}bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md{% else %}text-gray-700 bg-gray-100 hover:bg-gray-200{% endif %}"
+    >
+      <i class="fas fa-fire mr-1"></i> Популярні
+    </a>
+    <a
+      href="{{ request.path }}?sort=price_low{% if search_query %}&q={{ search_query }}{% endif %}"
+      class="min-w-max px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 whitespace-nowrap {% if current_sort == 'price_low' %}bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md{% else %}text-gray-700 bg-gray-100 hover:bg-gray-200{% endif %}"
+    >
+      <i class="fas fa-arrow-up mr-1"></i> Ціна
+    </a>
+    <a
+      href="{{ request.path }}?sort=price_high{% if search_query %}&q={{ search_query }}{% endif %}"
+      class="min-w-max px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 whitespace-nowrap {% if current_sort == 'price_high' %}bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md{% else %}text-gray-700 bg-gray-100 hover:bg-gray-200{% endif %}"
+    >
+      <i class="fas fa-arrow-down mr-1"></i> Ціна
+    </a>
+    <a
+      href="{{ request.path }}?sort=name{% if search_query %}&q={{ search_query }}{% endif %}"
+      class="min-w-max px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 whitespace-nowrap {% if current_sort == 'name' %}bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md{% else %}text-gray-700 bg-gray-100 hover:bg-gray-200{% endif %}"
+    >
+      <i class="fas fa-font mr-1"></i> Назва
+    </a>
+  </div>
+</div>

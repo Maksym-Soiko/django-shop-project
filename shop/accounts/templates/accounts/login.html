@@ -28,7 +28,7 @@
         name="username"
         type="text"
         value="{{ form.username.value|default_if_none:'' }}"
-        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-300"
+        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-teal-500 transition-colors duration-200"
         autocomplete="username"
         required
       />
@@ -49,7 +49,7 @@
         id="id_password"
         name="password"
         type="password"
-        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-300"
+        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-teal-500 transition-colors duration-200"
         autocomplete="current-password"
         required
       />
@@ -63,7 +63,7 @@
     <div class="flex items-center justify-between gap-3 mt-6">
       <button
         type="submit"
-        class="flex-1 px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-semibold rounded-lg shadow hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-150"
+        class="flex-1 px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-semibold rounded-lg shadow hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-150 cursor-pointer"
       >
         Увійти
       </button>

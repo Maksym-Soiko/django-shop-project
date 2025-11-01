@@ -1,25 +1,15 @@
 {% load static %}
+{% load static tailwind_tags %}
+
 <!DOCTYPE html>
 <html lang="uk">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{% block title %}EliteMarket{% endblock %}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    {% tailwind_css %}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              primary: "#0d9488",
-              secondary: "#10b981",
-            },
-          },
-        },
-      };
-    </script>
   </head>
 
   <body class="min-h-screen flex flex-col bg-slate-50 text-gray-900 antialiased">
@@ -113,7 +103,7 @@
                 {% csrf_token %}
                 <button
                   type="submit"
-                  class="px-3 py-2 rounded-lg text-sm bg-red-600 text-white hover:bg-red-700"
+                  class="px-3 py-2 rounded-lg text-sm bg-red-600 text-white hover:bg-red-700 cursor-pointer"
                 >
                   Вийти
                 </button>

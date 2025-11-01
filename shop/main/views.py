@@ -1,15 +1,28 @@
 from django.shortcuts import get_object_or_404, render
 from .models import Product, Category
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db.models import Q
+import re
 
 def product_list(request, category_slug=None):
 	categories = Category.objects.all()
 	products = Product.objects.all()
 
 	category = None
+	search_query = request.GET.get('q')
 	
 	if category_slug:
 		category = get_object_or_404(Category, slug=category_slug)
 		products = products.filter(category=category)
+
+	if search_query:
+		search_query = search_query.strip()
+		escaped_query = re.escape(search_query)
+		products = products.filter(
+			Q(name__iregex=escaped_query) |
+			Q(description__iregex=escaped_query) |
+			Q(category__name__iregex=escaped_query)
+		)
 
 	current_sort = request.GET.get('sort', 'new')
 
@@ -30,11 +43,21 @@ def product_list(request, category_slug=None):
 		products = products.order_by(sort_mapping['new'])
 		current_sort = 'new'
 
+	paginator = Paginator(products, 8)
+	page = request.GET.get('page')
+	try:
+		products = paginator.page(page)
+	except PageNotAnInteger:
+		products = paginator.page(1)
+	except EmptyPage:
+		products = paginator.page(paginator.num_pages)
+
 	return render(request, 'main/product_list.html', {
 		'products': products,
 		'categories': categories,
 		'category': category,
 		'current_sort': current_sort,
+		'search_query': search_query,
 	})
 
 
