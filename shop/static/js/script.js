@@ -38,4 +38,31 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   }
+
+  const toggleBtn = document.getElementById("togglePopularBtn");
+  const popularSection = document.getElementById("popularProductsSection");
+  const chevronIcon = document.getElementById("chevronIcon");
+  const btnText = document.getElementById("btnText");
+
+  if (toggleBtn && popularSection && chevronIcon && btnText) {
+    toggleBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+
+      popularSection.classList.toggle("hidden");
+
+      const isHidden = popularSection.classList.contains("hidden");
+
+      if (isHidden) {
+        chevronIcon.classList.remove("fa-chevron-up");
+        chevronIcon.classList.add("fa-chevron-down");
+      } else {
+        chevronIcon.classList.remove("fa-chevron-down");
+        chevronIcon.classList.add("fa-chevron-up");
+      }
+
+      btnText.textContent = isHidden
+        ? "Показати найпопулярніші товари"
+        : "Приховати найпопулярніші товари";
+    });
+  }
 });

@@ -1,10 +1,39 @@
 {% extends 'main/base.html' %} 
 {% load static %} 
+{% load shop_tags %} 
 {% block title %} 
 {% if search_query %} Пошук: {{ search_query }} {% elif category %} {{ category.name }} {% else %} Каталог товарів {% endif %} 
 {% endblock %} 
-{% block content %} 
+{% block content %}
+
+<div class="mb-4">
+  <div class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-teal-50 to-emerald-50 rounded-full border-2 border-teal-200/60 shadow-md hover:shadow-lg transition-shadow duration-300">
+    <i class="fas fa-hand-sparkles text-teal-600"></i>
+    <p class="text-base lg:text-lg font-semibold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
+      {% user_greeting user %}
+    </p>
+  </div>
+</div>
+
 {% include 'main/search_form.html' %}
+
+{% if not request.GET.page or request.GET.page == '1' %}
+<div class="mb-10 flex justify-start">
+  <button
+    id="togglePopularBtn"
+    type="button"
+    class="inline-flex items-center justify-center gap-2 px-5 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-xl shadow-md hover:shadow-lg transition transform hover:-translate-y-0.5 duration-150 cursor-pointer font-medium"
+  >
+    <i class="fas fa-fire text-orange-400"></i>
+    <span id="btnText">Показати найпопулярніші товари</span>
+    <i class="fas fa-chevron-down text-sm transition-transform duration-300" id="chevronIcon"></i>
+  </button>
+</div>
+
+<div id="popularProductsSection" class="hidden transition-all duration-500 mb-10">
+  {% show_popular_products 4 %}
+</div>
+{% endif %}
 
 <div class="mb-10">
   <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">

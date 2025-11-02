@@ -1,5 +1,6 @@
 {% extends 'main/base.html' %} 
 {% load static %} 
+{% load shop_filters %}
 {% block title %}
 {{product.name|default:"EliteMarket" }}
 {% endblock %} 
@@ -36,7 +37,7 @@
             {% endif %}
             <span class="text-gray-400 ml-2"> 👁 {{ product.views|default:0 }}</span>
             {% if product.created_at %}
-            <span class="text-gray-400 ml-4"> 📅 {{ product.created_at|date:"d.m.Y" }}</span>
+            <span class="text-gray-400 ml-4"> 📅 {{ product.created_at|time_ago }}</span>
             {% endif %}
           </div>
         </div>
