@@ -43,17 +43,22 @@
         </div>
 
         <div class="text-right">
-          <div class="text-2xl font-bold text-gray-900">
-            {{ product.price }} ₴
+          <div class="text-2xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent whitespace-nowrap">
+            {{ product.price|currency }}
           </div>
         </div>
       </div>
 
-      {% if product.description %}
+      {% if product.detailed_description %}
+      <div class="prose prose-lg max-w-none text-gray-700 leading-relaxed">
+        {{ product.detailed_description|markdown }}
+      </div>
+      {% elif product.description %}
       <div class="prose prose-sm max-w-none text-gray-700">
         {{ product.description|linebreaksbr }}
       </div>
       {% endif %}
+
       <div
         class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mt-4">
         <form
@@ -80,17 +85,6 @@
           <i class="fas fa-arrow-left mr-2"></i> Повернутися до каталогу
         </a>
       </div>
-
-      {% if product.sku or product.stock %}
-      <div class="mt-4 text-sm text-gray-500">
-        {% if product.sku %}
-        <div>Артикул: {{ product.sku }}</div>
-        {% endif %} 
-        {% if product.stock is not None %}
-        <div>На складі: {{ product.stock }}</div>
-        {% endif %}
-      </div>
-      {% endif %}
     </div>
   </div>
 
@@ -123,7 +117,7 @@
         <h3 class="text-sm font-semibold text-gray-900 line-clamp-2">
           {{ rp.name }}
         </h3>
-        <div class="mt-2 text-sm font-bold text-gray-900">{{ rp.price }} ₴</div>
+        <div class="mt-2 text-sm font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent whitespace-nowrap">{{ rp.price|currency }}</div>
       </a>
       {% endfor %}
     </div>

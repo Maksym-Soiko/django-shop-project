@@ -1,5 +1,6 @@
 from django.db import models
 from django.urls import reverse
+from markdownx.models import MarkdownxField
 
 class Category(models.Model):
 	name = models.CharField(max_length=100, db_index=True)
@@ -24,6 +25,7 @@ class Product(models.Model):
 	name = models.CharField(max_length=100)
 	slug = models.SlugField(max_length=150, unique=True)
 	description = models.TextField()
+	detailed_description = MarkdownxField(blank=True, help_text="Детальний опис товару в форматі Markdown")
 	image = models.ImageField(upload_to='products/%Y/%m/%d', blank=True)
 	price = models.DecimalField(max_digits=10, decimal_places=2)
 	created_at = models.DateTimeField(auto_now_add=True)
