@@ -25,7 +25,7 @@ def user_greeting(user):
         greeting = "Доброї ночі"
     
     if user.is_authenticated:
-        name = user.username
+        name = user.first_name or user.username
         return f"{greeting}, {name}!"
     else:
         return f"{greeting}!"

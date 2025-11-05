@@ -1,19 +1,22 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from main.models import Category
+from accounts.forms import UserRegistrationForm
+from django.contrib import messages
 
 def register_view(request):
 	if request.user.is_authenticated:
 		return redirect("main:product_list")
 
 	categories = Category.objects.all()
-	form = UserCreationForm(request.POST or None)
+	form = UserRegistrationForm(request.POST or None, request.FILES or None)
 
 	if request.method == 'POST' and form.is_valid():
 		user = form.save()
 		login(request, user)
+		messages.success(request, f"Вітаємо, {user.first_name}! Ваш обліковий запис було успішно створено.")
 		return redirect("main:product_list")
 
 	return render(request, 'accounts/register.html', {'form': form, 'categories': categories})

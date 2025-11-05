@@ -98,3 +98,14 @@ def time_ago(date):
 		return f"{days} дн тому"
 	else:
 		return date.strftime("%d.%m.%Y")
+
+
+@register.filter(name='add_class')
+def add_class(bound_field, css_class):
+    try:
+        widget = bound_field.field.widget
+        existing = widget.attrs.get('class', '')
+        classes = (existing + ' ' + css_class).strip()
+        return bound_field.as_widget(attrs={'class': classes})
+    except Exception:
+        return bound_field
