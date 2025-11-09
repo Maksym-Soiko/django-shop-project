@@ -1,5 +1,6 @@
 from django.db import models
 from django.urls import reverse
+from django.db.models import Avg, Count
 from markdownx.models import MarkdownxField
 
 class Category(models.Model):
@@ -43,3 +44,24 @@ class Product(models.Model):
 	
 	def get_absolute_url(self):
 		return reverse('main:product_detail', args=[self.id, self.slug])
+	
+	def get_average_rating(self):
+		avg = self.reviews.filter(is_active=True).aggregate(avg=Avg('rating'))['avg']
+		return round(avg, 2) if avg is not None else 0.0
+	
+	def get_reviews_count(self):
+		return self.reviews.filter(is_active=True).count()
+	
+	def get_rating_distribution(self):
+		qs = self.reviews.filter(is_active=True).values('rating').annotate(count=Count('id'))
+		dist = {i: 0 for i in range(1, 6)}
+		total = 0
+		for item in qs:
+			r = int(item['rating'])
+			c = int(item['count'])
+			if 1 <= r <= 5:
+				dist[r] = c
+				total += c
+		
+		percent = {i: (round((dist[i] * 100.0 / total), 1) if total else 0.0) for i in dist}
+		return {'counts': dist, 'total': total, 'percent': percent}

@@ -63,12 +63,28 @@ def product_list(request, category_slug=None):
 
 def product_detail(request, id, slug):
 	product = get_object_or_404(Product, id=id, slug=slug)
+	
 	product.views += 1
 	product.save(update_fields=['views'])
-
+	
+	reviews_qs = product.reviews.filter(is_active=True).select_related('author').order_by('-created_at')
+	
+	reviews_count = reviews_qs.count()
+	average_rating = product.get_average_rating()
+	rating_distribution = product.get_rating_distribution()
+	
+	user_review = None
+	if request.user.is_authenticated:
+		user_review = reviews_qs.filter(author=request.user).first()
+	
 	related_products = Product.objects.filter(category=product.category).exclude(id=product.id).order_by('-created_at')[:4]
-
+	
 	return render(request, 'main/product_detail.html', {
 		'product': product,
 		'related_products': related_products,
+		'reviews': reviews_qs,
+		'reviews_count': reviews_count,
+		'average_rating': average_rating,
+		'rating_distribution': rating_distribution,
+		'user_review': user_review,
 	})

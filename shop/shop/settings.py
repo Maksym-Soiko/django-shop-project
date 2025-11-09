@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     # My apps
     'main',
 	'accounts',
+    'reviews',
 ]
 
 if DEBUG:

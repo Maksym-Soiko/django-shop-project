@@ -164,3 +164,31 @@ input:focus-visible {
     height: 36px;
   }
 }
+
+summary.summary-menu::-webkit-details-marker {
+    display: none;
+  }
+  summary.summary-menu::marker {
+    display: none;
+  }
+  summary.summary-menu::-moz-list-bullet {
+    display: none;
+  }
+
+  summary.summary-menu {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    list-style: none;
+    padding: 0.4rem;
+    border-radius: 0.375rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+  }
+
+  summary.summary-menu::-webkit-details-marker,
+  summary.summary-menu::marker {
+    display: none;
+  }
