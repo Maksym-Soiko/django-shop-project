@@ -1,7 +1,32 @@
-{% load shop_filters %}
+{% load shop_filters %} 
+{% load shop_tags %} 
+{% with active_discount=product.get_active_discount product_promo=product|get_product_promo:product_promo_codes|default:None %}
+
 <article class="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border border-gray-100 transform hover:-translate-y-2">
-  {% if product.featured %}
-  <div class="absolute top-3 left-3 z-10">
+  {% if active_discount %}
+  <div class="absolute top-3 left-3 z-20">
+    <div class="relative">
+      <div class="absolute inset-0 bg-gradient-to-r from-red-500 to-pink-600 rounded-full blur-sm animate-pulse"></div>
+      <div class="relative flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-full shadow-lg">
+        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"
+          />
+          <path
+            fill-rule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        <span class="text-sm font-bold">
+          {% if active_discount.discount_type == 'percentage' %} -
+          {{ active_discount.value|floatformat:0 }}% {% else %} Знижка! {% endif %}
+        </span>
+      </div>
+    </div>
+  </div>
+  {% endif %} {% if product.featured %}
+  <div class="absolute top-3 {% if active_discount %}right-3{% else %}left-3{% endif %} z-10">
     <div class="relative">
       <div class="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full blur-sm"></div>
       <span class="relative bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1">
@@ -12,7 +37,8 @@
   {% endif %} {% if product.image %}
   <a
     href="{{ product.get_absolute_url }}"
-    class="block relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
+    class="block relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100"
+  >
     <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
     <img
       src="{{ product.image.url }}"
@@ -53,13 +79,13 @@
             stroke-linejoin="round"
             stroke-width="2"
             d="M15 12a3 3 0 11-6 0 3 3 0 016 0z">
-		  </path>
+          </path>
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
             stroke-width="2"
             d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
-		  </path>
+          </path>
         </svg>
         <span class="text-xs font-medium">{{ product.views|default:0 }}</span>
       </div>
@@ -77,10 +103,47 @@
     </p>
     {% endif %}
 
-    <div class="pt-3 border-t border-gray-100 flex items-center justify-between gap-3">
-      <div class="text-2xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent whitespace-nowrap">
-        {{ product.price|currency }}
+    <div class="flex items-center justify-between mt-4">
+      <div class="flex flex-col">
+        {% if active_discount %}
+          <span class="text-xs text-gray-400 line-through">{{ product.price|currency }}</span>
+          {% if product_promo %}
+            {% if product|can_apply_promo:product_promo %}
+              <span class="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                {{ product.get_discounted_price|apply_promo_to_price:product_promo|currency }}
+              </span>
+              <span class="text-xs text-purple-600">🎉 з промокодом</span>
+            {% else %}
+              <span class="text-xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
+                {{ product.get_discounted_price|currency }}
+              </span>
+            {% endif %}
+          {% else %}
+            <span class="text-xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
+              {{ product.get_discounted_price|currency }}
+            </span>
+          {% endif %}
+        {% else %}
+          {% if product_promo %}
+            {% if product|can_apply_promo:product_promo %}
+              <span class="text-xs text-gray-400 line-through">{{ product.price|currency }}</span>
+              <span class="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                {{ product.price|apply_promo_to_price:product_promo|currency }}
+              </span>
+              <span class="text-xs text-purple-600">🎉 з промокодом</span>
+            {% else %}
+              <span class="text-xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
+                {{ product.price|currency }}
+              </span>
+            {% endif %}
+          {% else %}
+            <span class="text-xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
+              {{ product.price|currency }}
+            </span>
+          {% endif %}
+        {% endif %}
       </div>
+
       <a
         href="{{ product.get_absolute_url }}"
         class="px-4 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 text-white text-sm font-semibold rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300"
@@ -96,3 +159,4 @@
     ></div>
   </div>
 </article>
+{% endwith %}

@@ -1,10 +1,9 @@
 {% extends 'main/base.html' %} 
 {% load static %} 
-{% load shop_filters %}
-{% block title %}
-{{product.name|default:"EliteMarket" }}
-{% endblock %} 
+{% load shop_filters %} 
+{% block title %}{{product.name|default:"EliteMarket"}}{% endblock %} 
 {% block content %}
+
 <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
     <div class="lg:col-span-1 flex items-center">
@@ -31,7 +30,8 @@
             {% if product.category %}
             <a
               href="{{ product.category.get_absolute_url }}"
-              class="inline-block px-3 py-1 bg-teal-50 text-teal-600 rounded-full font-semibold mr-2">
+              class="inline-block px-3 py-1 bg-teal-50 text-teal-600 rounded-full font-semibold mr-2"
+            >
               {{ product.category.name }}
             </a>
             {% endif %}
@@ -42,11 +42,63 @@
           </div>
         </div>
 
-        <div class="text-right">
-          <div class="text-2xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent whitespace-nowrap">
-            {{ product.price|currency }}
-          </div>
+        {% with active_discount=product.get_active_discount product_promo=product|get_product_promo:product_promo_codes %}
+        <div class="text-right flex-shrink-0">
+          {% if active_discount %}
+            <p class="text-lg text-gray-500 line-through">{{ product.price|currency }}</p>
+            {% if product_promo %}
+              {% if product|can_apply_promo:product_promo %}
+                <p class="text-xl text-gray-600 line-through">{{ product.get_discounted_price|currency }}</p>
+                <p class="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent whitespace-nowrap">
+                  {{ product.get_discounted_price|apply_promo_to_price:product_promo|currency }}
+                </p>
+                <div class="mt-2 space-y-1">
+                  <span class="inline-block px-2 py-0.5 bg-red-100 text-red-700 text-xs font-semibold rounded-full">
+                    {% if active_discount.discount_type == 'percentage' %}-{{ active_discount.value|floatformat:0 }}%{% else %}- {{ active_discount.value|currency }}{% endif %}
+                  </span>
+                  <span class="inline-block px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">
+                    🎉 + промокод
+                  </span>
+                </div>
+              {% else %}
+                <p class="text-3xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent whitespace-nowrap">
+                  {{ product.get_discounted_price|currency }}
+                </p>
+                <span class="mt-1 inline-block px-2 py-0.5 bg-red-100 text-red-700 text-xs font-semibold rounded-full">
+                  {% if active_discount.discount_type == 'percentage' %}-{{ active_discount.value|floatformat:0 }}%{% else %}- {{ active_discount.value|currency }}{% endif %}
+                </span>
+              {% endif %}
+            {% else %}
+              <p class="text-3xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent whitespace-nowrap">
+                {{ product.get_discounted_price|currency }}
+              </p>
+              <span class="mt-1 inline-block px-2 py-0.5 bg-red-100 text-red-700 text-xs font-semibold rounded-full">
+                {% if active_discount.discount_type == 'percentage' %}-{{ active_discount.value|floatformat:0 }}%{% else %}- {{ active_discount.value|currency }}{% endif %}
+              </span>
+            {% endif %}
+          {% else %}
+            {% if product_promo %}
+              {% if product|can_apply_promo:product_promo %}
+                <p class="text-lg text-gray-500 line-through">{{ product.price|currency }}</p>
+                <p class="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent whitespace-nowrap">
+                  {{ product.price|apply_promo_to_price:product_promo|currency }}
+                </p>
+                <span class="mt-1 inline-block px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">
+                  🎉 промокод
+                </span>
+              {% else %}
+                <div class="text-3xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent whitespace-nowrap">
+                  {{ product.price|currency }}
+                </div>
+              {% endif %}
+            {% else %}
+              <div class="text-3xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent whitespace-nowrap">
+                {{ product.price|currency }}
+              </div>
+            {% endif %}
+          {% endif %}
         </div>
+        {% endwith %}
       </div>
 
       {% if product.detailed_description %}
@@ -59,8 +111,7 @@
       </div>
       {% endif %}
 
-      <div
-        class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mt-4">
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mt-4 flex-wrap">
         <form
           method="post"
           action="#"
@@ -78,6 +129,31 @@
           </button>
         </form>
 
+        {% if user.is_authenticated %}
+          {% with product_promo=product|get_product_promo:product_promo_codes %}
+            {% if not product_promo %}
+              <a
+                href="{% url 'discounts:apply_promo_code' %}?product_id={{ product.id }}&next={{ request.path }}"
+                class="w-full sm:w-auto px-5 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-xl shadow hover:shadow-lg transform hover:scale-105 transition-all duration-300 cursor-pointer flex items-center justify-center"
+              >
+                <i class="fas fa-ticket-alt mr-2"></i> Застосувати промокод
+              </a>
+            {% else %}
+              <div class="w-full sm:w-auto px-5 py-3 bg-green-100 border-2 border-green-300 text-green-800 font-semibold rounded-xl flex items-center justify-center gap-2">
+                <i class="fas fa-check-circle text-green-600"></i>
+                <span>Промокод застосовано</span>
+              </div>
+            {% endif %}
+          {% endwith %}
+        {% endif %} {% if user.is_staff %}
+        <a
+          href="{% url 'discounts:add_discount' product.id %}"
+          class="w-full sm:w-auto px-5 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-semibold rounded-xl shadow transition hover:shadow-lg transform hover:scale-105 duration-300 cursor-pointer flex items-center justify-center"
+        >
+          <i class="fas fa-tags mr-2"></i> Додати знижку
+        </a>
+        {% endif %}
+
         <a
           href="{% url 'main:product_list' %}"
           class="w-full sm:w-auto px-4 py-3 border border-gray-200 rounded-xl text-md text-center text-gray-700 hover:bg-gray-200 transition"
@@ -89,40 +165,9 @@
   </div>
 
   {% if related_products %}
-  <section class="mt-12">
-    <h2 class="text-xl font-bold text-gray-900 mb-4">Схожі товари</h2>
-    <div
-      class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
-    >
-      {% for rp in related_products %}
-      <a
-        href="{{ rp.get_absolute_url }}"
-        class="group block bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-lg transition"
-      >
-        <div class="w-full h-40 flex items-center justify-center mb-3">
-          {% if rp.image %}
-          <img
-            src="{{ rp.image.url }}"
-            alt="{{ rp.name }}"
-            class="object-contain max-h-28 sm:max-h-36 w-full"
-          />
-          {% else %}
-          <div
-            class="w-full h-36 bg-gray-100 flex items-center justify-center rounded-lg"
-          >
-            <i class="fas fa-box-open text-4xl text-gray-300"></i>
-          </div>
-          {% endif %}
-        </div>
-        <h3 class="text-sm font-semibold text-gray-900 line-clamp-2">
-          {{ rp.name }}
-        </h3>
-        <div class="mt-2 text-sm font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent whitespace-nowrap">{{ rp.price|currency }}</div>
-      </a>
-      {% endfor %}
-    </div>
-  </section>
+  <section class="mt-12"></section>
   {% endif %}
 </div>
+
 {% include 'reviews/review_list.html' %}
 {% endblock %}

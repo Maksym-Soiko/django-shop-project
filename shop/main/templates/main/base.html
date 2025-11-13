@@ -89,6 +89,14 @@
                 class="text-sm font-semibold text-gray-700 hover:text-teal-600 transition">
                 Каталог
               </a>
+
+              {% if user.is_staff %}
+              <a
+                href="{% url 'discounts:promo_code_list' %}"
+                class="text-sm font-semibold text-gray-700 hover:text-teal-600 transition">
+                Промокоди
+              </a>
+              {% endif %}
             </nav>
 
             <div class="hidden md:flex items-center gap-2 md:ml-6">

@@ -1,0 +1,41 @@
+{% if discount %}
+  {% with item=discount %}
+    <span
+      role="status"
+      aria-label="Знижка"
+      class="inline-flex items-center font-semibold text-white bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 shadow-lg select-none animate-pulse {% if size == 'sm' %} text-xs px-2 py-0.5 rounded-sm {% else %} text-sm px-3 py-1 rounded-md {% endif %} {% if outline %} ring-2 ring-orange-200 {% endif %}">
+      {% if item.discount_type == 'percentage' %}
+        -{{ item.value|floatformat:0 }}%
+      {% elif item.discount_type == 'fixed' %}
+        -{{ item.value|floatformat:0 }} грн
+      {% elif item.discount_type == 'free_shipping' %}
+        Безкоштовна доставка
+      {% else %}
+        -{{ item.value }}
+      {% endif %}
+    </span>
+  {% endwith %}
+
+{% elif promo %}
+  {% with item=promo %}
+    <span
+      role="status"
+      aria-label="Знижка"
+      class="inline-flex items-center font-semibold text-white bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 shadow-lg select-none animate-pulse {% if size == 'sm' %} text-xs px-2 py-0.5 rounded-sm {% else %} text-sm px-3 py-1 rounded-md {% endif %} {% if outline %} ring-2 ring-orange-200 {% endif %}">
+      {% if item.discount_type == 'percentage' %}
+        -{{ item.value|floatformat:0 }}%
+      {% elif item.discount_type == 'fixed' %}
+        -{{ item.value|floatformat:0 }} грн
+      {% elif item.discount_type == 'free_shipping' %}
+        Безкоштовна доставка
+      {% else %}
+        -{{ item.value }}
+      {% endif %}
+    </span>
+  {% endwith %}
+
+{% else %}
+  <span
+    class="inline-flex items-center text-white bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 text-xs px-2 py-0.5 rounded-sm shadow-sm"
+    aria-hidden="true">-?</span>
+{% endif %}

@@ -1,0 +1,234 @@
+{% extends 'main/base.html' %} 
+{% load static %} 
+{% block title %}Редагувати промокод: {{ promo.code }} {% endblock %} 
+{% block content %}
+
+<style>
+  ::selection {
+    background-color: blue;
+    color: #ffffff;
+  }
+</style>
+
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+    <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-white flex items-center gap-3">
+            <i class="fas fa-edit"></i>
+            Редагувати промокод
+          </h1>
+          <p class="text-indigo-100 mt-2">
+            Оновіть параметри промокоду "{{ promo.code }}"
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          {% if promo.is_active %}
+          <span class="px-3 py-1 text-white rounded-full text-sm font-semibold">
+            <i class="fas fa-check-circle"></i> Активний
+          </span>
+          {% else %}
+          <span class="px-3 py-1 bg-gray-500/20 text-gray-100 rounded-full text-sm font-semibold">
+            <i class="fas fa-times-circle"></i> Неактивний
+          </span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="p-6 sm:p-8">
+    {% if form.non_field_errors %}
+      <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+        <div class="flex items-start gap-3">
+          <i class="fas fa-exclamation-circle text-red-600 text-xl mt-0.5"></i>
+          <div class="flex-1">
+            <p class="text-sm font-semibold text-red-800 mb-2">
+              Помилки у формі:
+            </p>
+            <ul class="list-disc list-inside text-sm text-red-700 space-y-1">
+              {% for error in form.non_field_errors %}
+              <li>{{ error }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Код промокоду
+          </label>
+          <div class="flex items-center gap-3">
+            <span class="text-2xl font-bold text-indigo-600 font-mono">
+              {{ promo.code }}
+            </span>
+            <span class="text-xs text-gray-500">(не можна змінити)</span>
+          </div>
+        </div>
+
+        <div>
+          <label
+            for="{{ form.discount_type.id_for_label }}"
+            class="block text-sm font-medium text-gray-700 mb-2"
+          >
+            {{ form.discount_type.label }}
+          </label>
+          {{ form.discount_type }} {% if form.discount_type.errors %}
+          <p class="mt-1 text-sm text-red-600">
+            {{ form.discount_type.errors.0 }}
+          </p>
+          {% endif %}
+        </div>
+
+        <div>
+          <label
+            for="{{ form.value.id_for_label }}"
+            class="block text-sm font-medium text-gray-700 mb-2"
+          >
+            {{ form.value.label }}
+          </label>
+          {{ form.value }} {% if form.value.errors %}
+          <p class="mt-1 text-sm text-red-600">{{ form.value.errors.0 }}</p>
+          {% endif %}
+          <p class="mt-1 text-xs text-gray-500">
+            Для відсотків: 0-100, для фіксованої суми: будь-яке додатне число
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label
+              for="{{ form.start_date.id_for_label }}"
+              class="block text-sm font-medium text-gray-700 mb-2"
+            >
+              {{ form.start_date.label }}
+            </label>
+            {{ form.start_date }} {% if form.start_date.errors %}
+            <p class="mt-1 text-sm text-red-600">
+              {{ form.start_date.errors.0 }}
+            </p>
+            {% endif %}
+          </div>
+
+          <div>
+            <label
+              for="{{ form.end_date.id_for_label }}"
+              class="block text-sm font-medium text-gray-700 mb-2"
+            >
+              {{ form.end_date.label }}
+            </label>
+            {{ form.end_date }} {% if form.end_date.errors %}
+            <p class="mt-1 text-sm text-red-600">
+              {{ form.end_date.errors.0 }}
+            </p>
+            {% endif %}
+          </div>
+        </div>
+
+        <div>
+          <label
+            for="{{ form.usage_limit.id_for_label }}"
+            class="block text-sm font-medium text-gray-700 mb-2"
+          >
+            {{ form.usage_limit.label }}
+          </label>
+          {{ form.usage_limit }} {% if form.usage_limit.errors %}
+          <p class="mt-1 text-sm text-red-600">
+            {{ form.usage_limit.errors.0 }}
+          </p>
+          {% endif %}
+          <p class="mt-1 text-xs text-gray-500">
+            Залиште порожнім для необмеженого використання
+          </p>
+        </div>
+
+        <div>
+          <label
+            for="{{ form.min_order_amount.id_for_label }}"
+            class="block text-sm font-medium text-gray-700 mb-2"
+          >
+            {{ form.min_order_amount.label }}
+          </label>
+          {{ form.min_order_amount }} {% if form.min_order_amount.errors %}
+          <p class="mt-1 text-sm text-red-600">
+            {{ form.min_order_amount.errors.0 }}
+          </p>
+          {% endif %}
+          <p class="mt-1 text-xs text-gray-500">
+            Мінімальна сума замовлення для застосування промокоду
+          </p>
+        </div>
+
+        <div>
+          <label
+            for="{{ form.description.id_for_label }}"
+            class="block text-sm font-medium text-gray-700 mb-2"
+          >
+            {{ form.description.label }}
+          </label>
+          {{ form.description }} {% if form.description.errors %}
+          <p class="mt-1 text-sm text-red-600">
+            {{ form.description.errors.0 }}
+          </p>
+          {% endif %}
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
+          <button
+            type="submit"
+            class="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold cursor-pointer rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2"
+          >
+            <i class="fas fa-save"></i>
+            Зберегти зміни
+          </button>
+          <a
+            href="{% url 'discounts:promo_code_stats' promo.id %}"
+            class="flex-1 px-6 py-3 bg-teal-600 text-white font-semibold rounded-xl hover:bg-teal-700 shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2"
+          >
+            <i class="fas fa-chart-bar"></i>
+            Статистика
+          </a>
+          <a
+            href="{% url 'discounts:promo_code_list' %}"
+            class="flex-1 px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors duration-200 flex items-center justify-center gap-2"
+          >
+            <i class="fas fa-times"></i>
+            Скасувати
+          </a>
+        </div>
+      </form>
+
+      <div class="mt-8 pt-6 border-t border-gray-200">
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+          <h3 class="text-sm font-semibold text-red-800 mb-2 flex items-center gap-2">
+            <i class="fas fa-exclamation-triangle"></i>
+            Небезпечна зона
+          </h3>
+          <p class="text-sm text-red-700 mb-3">
+            Видалення промокоду незворотнє. Всі дані будуть втрачені назавжди.
+          </p>
+          <form
+            method="post"
+            action="{% url 'discounts:delete_promo_code' promo.id %}"
+            onsubmit="return confirm('Ви впевнені, що хочете видалити промокод {{ promo.code }}? Цю дію неможливо скасувати!');"
+          >
+            {% csrf_token %}
+            <button
+              type="submit"
+              class="px-4 py-2 bg-red-600 text-white cursor-pointer font-semibold rounded-lg hover:bg-red-700 shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center gap-2"
+            >
+              <i class="fas fa-trash"></i>
+              Видалити промокод
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,149 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% load shop_filters %}
+
+{% block title %}Промокоди{% endblock %}
+
+{% block content %}
+{% url 'discounts:promo_code_form' as promo_create_url %}
+
+<div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+  <div class="flex items-center justify-between mb-4">
+    <h1 class="text-2xl font-semibold text-gray-900">Промокоди</h1>
+
+    <div class="flex items-center space-x-3">
+      <form method="get" action="" class="flex items-center space-x-2">
+        <input type="search" name="q" value="{{ request.GET.q|default:'' }}" placeholder="Пошук по коду"
+               class="w-64 px-3 py-2 border rounded-md text-sm focus:ring-0 focus:border-teal-500" />
+        <select name="status" class="px-2 py-2 border rounded-md text-sm">
+          <option value="" {% if not request.GET.status %}selected{% endif %}>Всі</option>
+          <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Активні</option>
+          <option value="inactive" {% if request.GET.status == 'inactive' %}selected{% endif %}>Неактивні</option>
+        </select>
+        <button 
+          type="submit" 
+          class="px-3 py-2 bg-teal-600 text-white rounded-md text-sm cursor-pointer hover:bg-teal-700 transform hover:scale-110 transition-all duration-200"
+        >
+          Фільтрувати
+        </button>
+      </form>
+
+      <a 
+        href="{{ promo_create_url }}" 
+        class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700 transform hover:scale-110 transition-all duration-200"
+      >
+        Створити промокод
+      </a>
+    </div>
+  </div>
+
+  <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Код</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Тип</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Значення</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дати (від — до)</th>
+            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Використано / Ліміт</th>
+            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Статус</th>
+            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Дії</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          {% for promo in promocodes %}
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
+              <a href="{{ promo.get_absolute_url|default:'' }}" class="hover:underline">{{ promo.code }}</a>
+            </td>
+
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+              {{ promo.get_discount_type_display|default:promo.discount_type }}
+            </td>
+
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              {% if promo.discount_type == 'percentage' or promo.get_discount_type_display == 'percentage' %}
+                -{{ promo.value|floatformat:0 }}%
+              {% elif promo.discount_type == 'fixed' or promo.get_discount_type_display == 'fixed' %}
+                -{{ promo.value|floatformat:2 }} грн
+              {% elif promo.discount_type == 'free_shipping' or promo.get_discount_type_display == 'free_shipping' %}
+                Безкоштовна доставка
+              {% else %}
+                -{{ promo.value }}
+              {% endif %}
+            </td>
+
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {{ promo.start_date|date:"d.m.Y H:i" }} — {{ promo.end_date|date:"d.m.Y H:i" }}
+            </td>
+
+            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-700">
+              {% if promo.times_used is not None %}
+                {{ promo.times_used }}
+              {% elif promo.used_count is not None %}
+                {{ promo.used_count }}
+              {% else %}
+                {{ promo.used|default:"0" }}
+              {% endif %}
+              /
+              {% if promo.usage_limit %}
+                {{ promo.usage_limit }}
+              {% else %}
+                —
+              {% endif %}
+            </td>
+
+            <td class="px-6 py-4 whitespace-nowrap text-center">
+              {% if promo.is_active %}
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Активний</span>
+              {% else %}
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-700">Неактивний</span>
+              {% endif %}
+            </td>
+
+            <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
+              <div class="flex items-center justify-center space-x-2">
+                <a href="{{ promo.get_edit_url|default:'' }}" class="text-indigo-600 hover:underline text-sm">Ред.</a>
+                <a href="{% url 'discounts:promo_code_stats' promo.pk %}" class="text-teal-600 hover:underline text-sm">Стат.</a>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="px-6 py-10 text-center text-sm text-gray-500">
+              Промокоди не знайдені. Спробуйте інші фільтри або створіть новий.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if page_obj and page_obj.has_other_pages %}
+    <div class="px-4 py-3 bg-gray-50 sm:px-6">
+      <nav class="flex items-center justify-between">
+        <div class="text-sm text-gray-700">
+          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </div>
+        <div>
+          <span class="inline-flex -space-x-px">
+            {% if page_obj.has_previous %}
+              <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&{% endif %}page={{ page_obj.previous_page_number }}" class="px-3 py-1 bg-white border rounded-l-md text-sm">Prev</a>
+            {% else %}
+              <span class="px-3 py-1 bg-gray-100 border rounded-l-md text-sm text-gray-400">Prev</span>
+            {% endif %}
+
+            {% if page_obj.has_next %}
+              <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&{% endif %}page={{ page_obj.next_page_number }}" class="px-3 py-1 bg-white border rounded-r-md text-sm">Next</a>
+            {% else %}
+              <span class="px-3 py-1 bg-gray-100 border rounded-r-md text-sm text-gray-400">Next</span>
+            {% endif %}
+          </span>
+        </div>
+      </nav>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

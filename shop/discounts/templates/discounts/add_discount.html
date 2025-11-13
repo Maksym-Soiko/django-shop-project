@@ -1,0 +1,84 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% load shop_filters %}
+
+{% block title %}Створити знижку для {{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto py-8">
+  <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+    <div class="px-6 py-6">
+      <h2 class="text-2xl font-bold mb-4">Створити знижку для {{ product.name }}</h2>
+
+      {% if form.non_field_errors %}
+      <div class="mb-4 text-sm text-red-700 bg-red-50 border border-red-100 rounded-md p-3">
+        {{ form.non_field_errors }}
+      </div>
+      {% endif %}
+
+      <form method="post" id="discount-form" class="space-y-4">
+        {% csrf_token %}
+
+        {% for field in form.visible_fields %}
+        <div>
+          <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+            {{ field.label }}{% if field.field.required %}<span class="text-red-500"> *</span>{% endif %}
+          </label>
+
+          {% if field.name == 'discount_type' %}
+          <div class="flex flex-wrap gap-3">
+            {% for radio in field %}
+            <label class="inline-flex items-center cursor-pointer">
+              {{ radio.tag }}
+              <span
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium transition
+                       peer-checked:bg-teal-600 peer-checked:text-white peer-checked:border-teal-600 hover:bg-teal-50">
+                <span class="text-sm">{{ radio.choice_label }}</span>
+              </span>
+            </label>
+            {% endfor %}
+          </div>
+          {% else %}
+          {{ field|add_class:"w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-teal-500 transition-colors duration-200" }}
+          {% endif %}
+
+          {% if field.help_text %}
+          <p class="mt-1 text-xs text-gray-500">{{ field.help_text|safe }}</p>
+          {% endif %}
+
+          {% if field.errors %}
+          <p class="mt-2 text-xs text-red-600">
+            {% for err in field.errors %}{{ err }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+          </p>
+          {% endif %}
+        </div>
+        {% endfor %}
+
+        <section id="preview" aria-live="polite" class="border border-gray-100 rounded-md p-4 bg-gray-50">
+          <h3 class="text-sm font-medium text-gray-800 mb-2">Попередній перегляд</h3>
+          <p id="preview-desc" class="text-sm text-gray-600 mb-3">Заповніть поля, щоб побачити попередній перегляд знижки.</p>
+
+          <div class="flex items-center gap-3">
+            <label for="sample-price" class="text-sm text-gray-700">Приклад ціни товару:</label>
+            <input type="number" id="sample-price" value="100.00" min="0" step="0.01"
+                   class="w-32 px-4 py-2 border border-gray-200 rounded-lg focus:border-teal-500 transition-colors duration-200" />
+          </div>
+
+          <p id="preview-result" class="mt-3 font-semibold text-gray-900"></p>
+        </section>
+
+        <div class="flex gap-3 pt-4">
+          <button type="submit" class="flex-1 bg-teal-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-teal-700">
+            Створити
+          </button>
+          <a href="{{ product.get_absolute_url }}" class="flex-1 text-center border border-gray-200 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-50">
+            Скасувати
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'js/discount-form.js' %}"></script>
+{% endblock %}

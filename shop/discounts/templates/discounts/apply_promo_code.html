@@ -1,0 +1,213 @@
+{% extends 'main/base.html' %} 
+{% load static %} 
+{% block title %} Застосувати промокод{% endblock %} 
+{% block content %}
+
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+    <div class="bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-8 text-center">
+      <div class="inline-flex items-center justify-center w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full mb-4">
+        <i class="fas fa-ticket-alt text-3xl text-white"></i>
+      </div>
+      <h1 class="text-3xl font-bold text-white">Застосувати промокод</h1>
+      <p class="text-purple-100 mt-2">
+        Введіть код промокоду для отримання знижки
+      </p>
+    </div>
+
+    <div class="p-6 sm:p-8">
+      {% if current_promo_code %}
+      <div class="mb-6 p-5 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl shadow-md">
+        <div class="flex items-start gap-4">
+          <div class="flex-shrink-0">
+            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+              <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+            </div>
+          </div>
+          <div class="flex-1">
+            <p class="text-base font-bold text-green-900 mb-1">
+              ✨ Активний промокод застосовано!
+            </p>
+            <p class="text-2xl font-mono font-bold text-green-700 mb-2">
+              {{ current_promo_code }}
+            </p>
+            <p class="text-sm text-green-600">
+              <i class="fas fa-info-circle mr-1"></i>
+              Промокод буде автоматично застосовано при оформленні замовлення
+            </p>
+          </div>
+          <a
+            href="{% url 'discounts:remove_promo_code' %}"
+            class="flex-shrink-0 px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-semibold"
+            title="Видалити промокод"
+          >
+            <i class="fas fa-times mr-1"></i>
+            Видалити
+          </a>
+        </div>
+      </div>
+      {% endif %} 
+
+      <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        {% if product %}
+        <input type="hidden" name="product_id" value="{{ product.id }}" />
+        <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg mb-4">
+          <p class="text-sm text-blue-800">
+            <i class="fas fa-info-circle mr-2"></i>
+            Промокод буде застосовано до товару:
+            <strong>{{ product.name }}</strong>
+          </p>
+        </div>
+        {% endif %} {% if request.META.HTTP_REFERER %}
+        <input
+          type="hidden"
+          name="next"
+          value="{{ request.META.HTTP_REFERER }}"
+        />
+        {% endif %}
+
+        <div>
+          <label
+            for="{{ form.promo_code.id_for_label }}"
+            class="block text-sm font-medium text-gray-700 mb-2"
+          >
+            {{ form.promo_code.label }}
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <i class="fas fa-tag text-gray-400"></i>
+            </div>
+            <input
+              type="text"
+              name="{{ form.promo_code.name }}"
+              id="{{ form.promo_code.id_for_label }}"
+              class="block w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-150 text-lg font-semibold uppercase"
+              placeholder="Введіть промокод"
+              value="{{ form.promo_code.value|default:'' }}"
+              required
+            />
+          </div>
+          {% if form.promo_code.errors %}
+          <div class="mt-2 space-y-1">
+            {% for error in form.promo_code.errors %}
+            <p class="text-sm text-red-600 flex items-center gap-2">
+              <i class="fas fa-exclamation-circle"></i>
+              {{ error }}
+            </p>
+            {% endfor %}
+          </div>
+          {% endif %}
+          <p class="mt-2 text-xs text-gray-500">
+            <i class="fas fa-info-circle mr-1"></i>
+            Промокод автоматично застосується до вашого наступного замовлення
+          </p>
+        </div>
+
+        <div class="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4">
+          <h3 class="text-sm font-semibold text-purple-900 mb-2 flex items-center gap-2">
+            <i class="fas fa-gift"></i>
+            Переваги промокодів
+          </h3>
+          <ul class="space-y-1.5 text-sm text-purple-800">
+            <li class="flex items-start gap-2">
+              <i class="fas fa-check text-purple-600 mt-0.5"></i>
+              <span>Знижки на товари від 5% до 50%</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="fas fa-check text-purple-600 mt-0.5"></i>
+              <span>Безкоштовна доставка при певній сумі</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="fas fa-check text-purple-600 mt-0.5"></i>
+              <span>Спеціальні пропозиції для постійних клієнтів</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3 pt-4">
+          <button
+            type="submit"
+            class="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2"
+          >
+            <i class="fas fa-check"></i>
+            Застосувати промокод
+          </button>
+          <a
+            href="{% url 'main:product_list' %}"
+            class="flex-1 px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors duration-200 flex items-center justify-center gap-2"
+          >
+            <i class="fas fa-arrow-left"></i>
+            Повернутися до каталогу
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="mt-6 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+      <i class="fas fa-lightbulb text-yellow-500"></i>
+      Де знайти промокоди?
+    </h3>
+    <ul class="space-y-2 text-sm text-gray-600">
+      <li class="flex items-start gap-3">
+        <i class="fas fa-envelope text-teal-600 mt-0.5"></i>
+        <span
+          >Підпишіться на нашу розсилку для отримання ексклюзивних
+          промокодів</span
+        >
+      </li>
+      <li class="flex items-start gap-3">
+        <i class="fas fa-share-alt text-teal-600 mt-0.5"></i>
+        <span>Стежте за нами в соціальних мережах для спеціальних акцій</span>
+      </li>
+      <li class="flex items-start gap-3">
+        <i class="fas fa-birthday-cake text-teal-600 mt-0.5"></i>
+        <span>Отримайте промокод на день народження в особистому кабінеті</span>
+      </li>
+    </ul>
+  </div>
+
+  {% if used_promo_codes %}
+  <div class="mt-6 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+      <i class="fas fa-history text-teal-600"></i>
+      Історія використаних промокодів
+    </h3>
+    <div class="space-y-2">
+      {% for usage in used_promo_codes %}
+      <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center">
+            <i class="fas fa-check text-teal-600"></i>
+          </div>
+          <div>
+            <p class="font-semibold text-gray-900">
+              {{ usage.promo_code.code }}
+            </p>
+            <p class="text-xs text-gray-500">
+              {{ usage.used_at|date:"d.m.Y H:i" }}
+            </p>
+          </div>
+        </div>
+        <div class="text-right">
+          {% if usage.discount_amount > 0 %}
+          <span class="text-sm font-semibold text-green-600">
+            -{{ usage.discount_amount|floatformat:2 }} грн
+          </span>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %} {% if not current_promo_code %}
+  <div class="mt-6 bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
+    <i class="fas fa-ticket-alt text-gray-300 text-4xl mb-3"></i>
+    <p class="text-gray-600">Ви ще не використовували жодного промокоду</p>
+  </div>
+  {% endif %} {% endif %}
+</div>
+{% endblock %}

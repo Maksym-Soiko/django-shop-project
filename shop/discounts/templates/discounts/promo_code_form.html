@@ -1,0 +1,58 @@
+{% extends 'main/base.html' %} 
+{% load static %} 
+{% load shop_filters %} 
+{% block title %}Створити промокод{% endblock %} 
+{% block content %}
+
+<div class="max-w-2xl mx-auto py-8">
+  <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+    <div class="px-6 py-6">
+      <h2 class="text-2xl font-bold mb-4">Створити промокод</h2>
+
+      {% if form.non_field_errors %}
+      <div class="mb-4 text-sm text-red-700 bg-red-50 border border-red-100 rounded-md p-3">
+        {{ form.non_field_errors }}
+      </div>
+      {% endif %}
+
+      <form method="post" id="promo-create-form" class="space-y-4">
+        {% csrf_token %} {% for field in form.visible_fields %}
+        <div>
+          <label
+            for="{{ field.id_for_label }}"
+            class="block text-sm font-medium text-gray-700 mb-1"
+          >
+            {{ field.label }}{% if field.field.required %}
+            <span class="text-red-500">*</span>{% endif %}
+          </label>
+
+          {{ field }} {% if field.help_text %}
+          <p class="mt-1 text-xs text-gray-500">{{ field.help_text|safe }}</p>
+          {% endif %} {% if field.errors %}
+          <p class="mt-2 text-xs text-red-600">
+            {% for err in field.errors %}{{ err }}{% if not forloop.last %}<br />
+            {% endif %} {% endfor %}
+          </p>
+          {% endif %}
+        </div>
+        {% endfor %}
+
+        <div class="flex gap-3 pt-4">
+          <button
+            type="submit"
+            class="flex-1 bg-teal-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-teal-700 transform hover:scale-105 transition-all duration-200"
+          >
+            Створити
+          </button>
+          <a
+            href="{% url 'discounts:promo_code_list' %}"
+            class="flex-1 text-center border border-gray-200 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-50 transform hover:scale-105 transition-all duration-200"
+          >
+            Скасувати
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

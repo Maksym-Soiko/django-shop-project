@@ -1,0 +1,172 @@
+{% extends 'main/base.html' %} 
+{% load static %} 
+{% load shop_tags %} 
+{% load shop_filters %} 
+{% block title %}Статистика: {{ promo.code }}{% endblock %} 
+{% block content %}
+
+<div class="max-w-6xl mx-auto py-6 px-4">
+  <div class="flex items-start justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-semibold text-gray-900">Статистика промокоду</h1>
+      <p class="text-sm text-gray-600 mt-1">
+        Інформація та використання промокоду
+      </p>
+    </div>
+
+    <div class="space-x-2">
+      <a
+        href="{% url 'discounts:promo_code_list' %}"
+        class="px-3 py-2 bg-white border border-gray-200 text-gray-700 rounded-md text-sm hover:bg-gray-50 transform hover:scale-105 transition-all duration-200"
+        >Назад до списку</a
+      >
+      <a
+        href="{{ promo.get_edit_url|default:'' }}"
+        class="px-3 py-2 bg-teal-600 text-white rounded-md text-sm hover:bg-teal-700 shadow-md hover:shadow-lg transform hover:scale-110 transition-all duration-300"
+        >Редагувати</a
+      >
+    </div>
+  </div>
+
+  <section class="bg-white shadow rounded-lg p-6 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div>
+        <h4 class="text-xs text-gray-500">Код</h4>
+        <div class="mt-1 text-lg font-medium text-gray-900">
+          {{ promo.code }}
+        </div>
+        {% if promo.description %}
+        <div class="text-sm text-gray-500 mt-1">{{ promo.description }}</div>
+        {% endif %}
+      </div>
+
+      <div>
+        <h4 class="text-xs text-gray-500">Тип / Значення</h4>
+        <div class="mt-1 text-lg font-medium text-gray-900">
+          {% if promo.discount_type == 'percentage' %} - {{ promo.value|floatformat:0 }}% {% elif promo.discount_type == 'fixed'%}
+          - {{ promo.value|floatformat:2 }} грн {% elif promo.discount_type == 'free_shipping' %} Безкоштовна доставка {% else %} -{{ promo.value}}
+          {% endif %}
+        </div>
+        <div class="text-sm text-gray-500 mt-1">
+          Мін. сума замовлення: {{ promo.min_order_amount|default:"0.00" }} грн
+        </div>
+      </div>
+
+      <div>
+        <h4 class="text-xs text-gray-500">Період</h4>
+        <div class="mt-1 text-sm text-gray-700">
+          {{ promo.start_date|date:"d.m.Y H:i" }} — {{ promo.end_date|date:"d.m.Y H:i" }}
+        </div>
+        <div class="text-sm text-gray-500 mt-1">
+          Ліміт використань: {% if promo.usage_limit %}{{ promo.usage_limit }}
+          {% else %}необмежено{% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+    <div class="bg-white shadow rounded-lg p-4">
+      <div class="text-xs text-gray-500">Використано</div>
+      <div class="mt-2 text-2xl font-semibold text-gray-900">
+        {{ usages_count|default:0 }}
+      </div>
+    </div>
+
+    <div class="bg-white shadow rounded-lg p-4">
+      <div class="text-xs text-gray-500">Загальна сума знижок</div>
+      <div class="mt-2 text-2xl font-semibold text-gray-900">
+        {{ total_discount|floatformat:2|default:"0.00" }} грн
+      </div>
+    </div>
+
+    <div class="bg-white shadow rounded-lg p-4">
+      <div class="text-xs text-gray-500">Середня знижка</div>
+      <div class="mt-2 text-2xl font-semibold text-gray-900">
+        {% if usages_count and usages_count > 0 %}
+          {{ total_discount|divide:usages_count|floatformat:2 }} грн
+        {% else %}
+          —
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  {% if usages_by_date %} 
+  {{ usages_by_date|json_script:"usages-by-date" }}
+  <section class="bg-white shadow rounded-lg p-4 mb-6">
+    <h3 class="text-sm font-medium text-gray-800 mb-3 text-center">
+      Використання по датах
+    </h3>
+    <div class="w-full flex justify-center items-center py-4">
+      <div style="width: 100%; max-width: 600px; height: 200px;">
+        <canvas id="usagesChart"></canvas>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="bg-white shadow rounded-lg p-4">
+    <h3 class="text-sm font-medium text-gray-800 mb-4">
+      Користувачі, які використали промокод
+    </h3>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+              Користувач
+            </th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+              Email
+            </th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+              Дата використання
+            </th>
+            <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+              Сума знижки
+            </th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-100">
+          {% for u in usages %}
+          <tr>
+            <td class="px-4 py-3 text-sm text-gray-700">
+              {% if u.user %}
+              <a
+                href="{{ u.user.get_absolute_url|default:'' }}"
+                class="text-teal-600 hover:underline"
+              >
+                {{ u.user.get_full_name|default:u.user.username }}
+              </a>
+              {% else %} Гість {% endif %}
+            </td>
+            <td class="px-4 py-3 text-sm text-gray-600">
+              {{ u.user.email|default:'—' }}
+            </td>
+            <td class="px-4 py-3 text-sm text-gray-600">
+              {{ u.used_at|date:"d.m.Y H:i" }}
+            </td>
+            <td class="px-4 py-3 text-sm text-right text-gray-900">
+              {{ u.discount_amount|floatformat:2 }} грн
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" class="px-4 py-6 text-center text-sm text-gray-500">
+              Промокод ще не використовувався
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+{% if usages_by_date %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="{% static 'js/promo-stats-chart.js' %}"></script>
+{% endif %} 
+{% endblock %}

@@ -2,6 +2,7 @@ from django.db import models
 from django.urls import reverse
 from django.db.models import Avg, Count
 from markdownx.models import MarkdownxField
+from decimal import Decimal
 
 class Category(models.Model):
 	name = models.CharField(max_length=100, db_index=True)
@@ -27,7 +28,7 @@ class Product(models.Model):
 	slug = models.SlugField(max_length=150, unique=True)
 	description = models.TextField()
 	detailed_description = MarkdownxField(blank=True, help_text="Детальний опис товару в форматі Markdown")
-	image = models.ImageField(upload_to='products/%Y/%m/%d', blank=True)
+	image = models.ImageField(upload_to='products/%Y/%m/%d/', blank=True)
 	price = models.DecimalField(max_digits=10, decimal_places=2)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
@@ -65,3 +66,76 @@ class Product(models.Model):
 		
 		percent = {i: (round((dist[i] * 100.0 / total), 1) if total else 0.0) for i in dist}
 		return {'counts': dist, 'total': total, 'percent': percent}
+	
+	def get_active_discount(self, quantity=1):
+		original_unit_price = getattr(self, 'price', Decimal('0.00')) or Decimal('0.00')
+		best = None
+		best_amount = Decimal('0.00')
+		related = getattr(self, 'discounts', None)
+		if related is None:
+			return None
+		for d in related.filter(is_active=True):
+			try:
+				if hasattr(d, 'is_valid') and callable(d.is_valid) and not d.is_valid():
+					continue
+			except Exception:
+				continue
+			try:
+				amt = Decimal(d.calculate_discount(original_unit_price, quantity) or 0)
+			except Exception:
+				try:
+					amt = Decimal(str(d.calculate_discount(original_unit_price, quantity)))
+				except Exception:
+					amt = Decimal('0.00')
+			if amt > best_amount:
+				best_amount = amt
+				best = d
+		return best
+
+	def get_discounted_price(self, quantity=1):
+		unit = getattr(self, 'price', Decimal('0.00')) or Decimal('0.00')
+		try:
+			qty = max(1, int(quantity))
+		except Exception:
+			qty = 1
+		total = (unit * qty).quantize(Decimal('0.01'))
+		best = self.get_active_discount(qty)
+		if not best:
+			return total
+		try:
+			discount_amount = Decimal(best.calculate_discount(unit, qty) or 0)
+		except Exception:
+			try:
+				discount_amount = Decimal(str(best.calculate_discount(unit, qty)))
+			except Exception:
+				discount_amount = Decimal('0.00')
+		if discount_amount < 0:
+			discount_amount = Decimal('0.00')
+		if discount_amount > total:
+			discount_amount = total
+		result = (total - discount_amount).quantize(Decimal('0.01'))
+		if result < Decimal('0.00'):
+			return Decimal('0.00')
+		return result
+
+	def has_active_discount(self):
+		return self.get_active_discount() is not None
+
+	def get_discount_percentage(self):
+		unit = getattr(self, 'price', Decimal('0.00')) or Decimal('0.00')
+		if unit == 0:
+			return Decimal('0.00')
+		best = self.get_active_discount(1)
+		if not best:
+			return Decimal('0.00')
+		try:
+			discount_amount = Decimal(best.calculate_discount(unit, 1) or 0)
+		except Exception:
+			try:
+				discount_amount = Decimal(str(best.calculate_discount(unit, 1)))
+			except Exception:
+				discount_amount = Decimal('0.00')
+		if discount_amount <= 0:
+			return Decimal('0.00')
+		percent = (discount_amount / unit * Decimal('100')).quantize(Decimal('0.01'))
+		return percent

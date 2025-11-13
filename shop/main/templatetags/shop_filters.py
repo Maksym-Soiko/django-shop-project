@@ -4,6 +4,7 @@ from django.utils.safestring import mark_safe
 import markdown
 from markdown.extensions import Extension
 from markdown.treeprocessors import Treeprocessor
+from decimal import Decimal
 
 register = template.Library()
 
@@ -109,3 +110,93 @@ def add_class(bound_field, css_class):
         return bound_field.as_widget(attrs={'class': classes})
     except Exception:
         return bound_field
+	
+
+@register.filter(name='int')
+def to_int(value):
+    try:
+        return int(value)
+    except Exception:
+        return 0
+
+@register.filter(name='floatval')
+def to_float(value):
+    try:
+        return float(value)
+    except Exception:
+        return 0.0
+
+@register.filter(name='divide')
+def divide(value, arg):
+    try:
+        denom = float(arg)
+        if denom == 0:
+            return 0.0
+        return float(value) / denom
+    except Exception:
+        return 0.0
+
+@register.filter(name='can_apply_promo')
+def can_apply_promo(product, promo):
+    if not promo:
+        return False
+    
+    try:
+        if hasattr(promo, 'can_be_applied_to_product'):
+            if not promo.can_be_applied_to_product(product):
+                return False
+        
+        if hasattr(product, 'get_discounted_price'):
+            price = Decimal(str(product.get_discounted_price()))
+        else:
+            price = Decimal(str(product.price))
+        
+        min_amount = Decimal(str(promo.min_order_amount)) if promo.min_order_amount else Decimal('0')
+        
+        return price >= min_amount
+    except Exception as e:
+        print(f"Error in can_apply_promo: {e}")
+        return False
+
+@register.filter(name='apply_promo_to_price')
+def apply_promo_to_price(price, promo):
+    if not promo:
+        return price
+    
+    try:
+        price_decimal = Decimal(str(price))
+        
+        if promo.discount_type == 'percentage':
+            discount = price_decimal * (Decimal(str(promo.value)) / Decimal('100'))
+            return price_decimal - discount
+        elif promo.discount_type == 'fixed':
+            discount = Decimal(str(promo.value))
+            result = price_decimal - discount
+            return max(result, Decimal('0'))
+        elif promo.discount_type == 'free_shipping':
+            return price_decimal
+    except Exception:
+        return price
+    
+    return price
+
+@register.filter(name='get_product_promo')
+def get_product_promo(product, product_promo_codes):
+    if not product or not product_promo_codes or not isinstance(product_promo_codes, dict):
+        return None
+    
+    try:
+        from discounts.models import PromoCode
+        promo_data = product_promo_codes.get(str(product.id))
+        if promo_data and isinstance(promo_data, dict):
+            promo_id = promo_data.get('promo_id')
+            if promo_id:
+                try:
+                    return PromoCode.objects.get(id=promo_id)
+                except PromoCode.DoesNotExist:
+                    return None
+    except Exception as e:
+        print(f"Error in get_product_promo: {e}")
+        return None
+    
+    return None

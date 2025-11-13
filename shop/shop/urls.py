@@ -24,6 +24,7 @@ urlpatterns = [
     path('markdownx/', include('markdownx.urls')),
     path('accounts/', include('accounts.urls', namespace='accounts')),
     path('reviews/', include('reviews.urls', namespace='reviews')),
+    path('discounts/', include('discounts.urls', namespace='discounts')),
     path('', include('main.urls', namespace='main')),
 ]
 
