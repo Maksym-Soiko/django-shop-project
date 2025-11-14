@@ -181,25 +181,22 @@ class PromoCode(models.Model):
 
 
 class PromoCodeUsage(models.Model):
-	promo_code = models.ForeignKey(PromoCode, on_delete=models.CASCADE, related_name='usages')
-	user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='promo_usages')
-	order_amount = models.DecimalField(max_digits=10, decimal_places=2)
-	discount_amount = models.DecimalField(max_digits=10, decimal_places=2)
-	used_at = models.DateTimeField(auto_now_add=True)
+    promo_code = models.ForeignKey(PromoCode, on_delete=models.CASCADE, related_name='usages')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='promo_usages')
+    product = models.ForeignKey(
+        Product, 
+        on_delete=models.CASCADE, 
+        related_name='promo_usages', 
+        null=True, 
+        blank=True
+    )
+    
+    order_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    used_at = models.DateTimeField(auto_now_add=True)
 
-	def save(self, *args, **kwargs):
-		is_new = self.pk is None
-		super().save(*args, **kwargs)
-		
-		if is_new:
-			self.promo_code.update_usage_count()
-
-	def delete(self, *args, **kwargs):
-		promo = self.promo_code
-		super().delete(*args, **kwargs)
-		promo.update_usage_count()
-
-	class Meta:
-		verbose_name = 'Використання промокоду'
-		verbose_name_plural = 'Використання промокодів'
-		ordering = ['-used_at']
+    class Meta:
+        verbose_name = 'Використання промокоду'
+        verbose_name_plural = 'Використання промокодів'
+        ordering = ['-used_at']
+        unique_together = ('promo_code', 'user', 'product')

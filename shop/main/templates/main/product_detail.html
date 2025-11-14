@@ -111,55 +111,50 @@
       </div>
       {% endif %}
 
-      <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mt-4 flex-wrap">
-        <form
-          method="post"
-          action="#"
-          class="inline"
-          onsubmit="event.preventDefault(); alert('Додавання до кошика наразі тимчасово недоступне.');"
-        >
-          {% csrf_token %}
-          <input type="hidden" name="product_id" value="{{ product.id }}" />
-          <button
-            type="submit"
-            class="w-full sm:w-auto px-5 py-3 bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-semibold rounded-xl shadow transition hover:bg-teal-600 flex items-center justify-center hover:shadow-lg transform hover:scale-105 transition-all duration-300 cursor-pointer"
-            title="Тимчасово недоступно"
-          >
-            <i class="fas fa-cart-plus mr-2"></i> Додати до кошика
-          </button>
-        </form>
+      <div class="flex flex-col gap-3 mt-4">
+        <div class="w-full flex">
+          <form action="{% url 'cart:cart_add' product.id %}" method="post" class="inline w-full">
+            {% csrf_token %}
+            <div class="flex items-center gap-3 w-full">
+              {{ cart_product_form.quantity }}
+              {{ cart_product_form.override }}
+              <button type="submit"
+                class="w-full cursor-pointer sm:w-40 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold py-3 px-4 rounded-md shadow hover:opacity-95 transform-gpu hover:scale-105 transition-transform duration-150 ease-out inline-flex items-center justify-center text-sm mx-auto">
+                <i class="fas fa-cart-plus mr-2"></i> Додати в кошик
+              </button>
+            </div>
+          </form>
+        </div>
 
-        {% if user.is_authenticated %}
-          {% with product_promo=product|get_product_promo:product_promo_codes %}
-            {% if not product_promo %}
-              <a
-                href="{% url 'discounts:apply_promo_code' %}?product_id={{ product.id }}&next={{ request.path }}"
-                class="w-full sm:w-auto px-5 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-xl shadow hover:shadow-lg transform hover:scale-105 transition-all duration-300 cursor-pointer flex items-center justify-center"
-              >
-                <i class="fas fa-ticket-alt mr-2"></i> Застосувати промокод
-              </a>
-            {% else %}
-              <div class="w-full sm:w-auto px-5 py-3 bg-green-100 border-2 border-green-300 text-green-800 font-semibold rounded-xl flex items-center justify-center gap-2">
-                <i class="fas fa-check-circle text-green-600"></i>
-                <span>Промокод застосовано</span>
-              </div>
-            {% endif %}
-          {% endwith %}
-        {% endif %} {% if user.is_staff %}
-        <a
-          href="{% url 'discounts:add_discount' product.id %}"
-          class="w-full sm:w-auto px-5 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-semibold rounded-xl shadow transition hover:shadow-lg transform hover:scale-105 duration-300 cursor-pointer flex items-center justify-center"
-        >
-          <i class="fas fa-tags mr-2"></i> Додати знижку
-        </a>
-        {% endif %}
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-start gap-3">
+          {% if user.is_authenticated %}
+            {% with active_discount=product.get_active_discount product_promo=product|get_product_promo:product_promo_codes %}
+              {% if not product_promo and not active_discount %}
+                <a href="{% url 'discounts:apply_promo_code' %}?product_id={{ product.id }}&next={{ request.path }}"
+                   class="w-full cursor-pointer sm:w-40 px-3 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-md shadow hover:shadow-lg transform-gpu hover:scale-105 transition-transform duration-150 ease-out inline-flex items-center justify-center text-sm mx-auto sm:mx-0">
+                  <i class="fas fa-ticket-alt mr-2"></i> Застосувати промокод
+                </a>
+              {% elif product_promo %}
+                <div class="w-full sm:w-40 px-3 py-2 bg-green-100 border-2 border-green-300 text-green-800 font-semibold rounded-md flex items-center justify-center gap-2 text-sm mx-auto sm:mx-0">
+                  <i class="fas fa-check-circle text-green-600"></i>
+                  <span>Промокод застосовано</span>
+                </div>
+              {% endif %}
+            {% endwith %}
+          {% endif %}
 
-        <a
-          href="{% url 'main:product_list' %}"
-          class="w-full sm:w-auto px-4 py-3 border border-gray-200 rounded-xl text-md text-center text-gray-700 hover:bg-gray-200 transition"
-        >
-          <i class="fas fa-arrow-left mr-2"></i> Повернутися до каталогу
-        </a>
+          {% if user.is_staff %}
+            <a href="{% url 'discounts:add_discount' product.id %}"
+               class="w-full sm:w-40 px-3 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white font-semibold rounded-md shadow transform-gpu hover:scale-105 transition-transform duration-150 ease-out inline-flex items-center justify-center text-sm mx-auto sm:mx-0">
+              <i class="fas fa-tags mr-2"></i> Додати знижку
+            </a>
+          {% endif %}
+
+          <a href="{% url 'main:product_list' %}"
+             class="w-full sm:w-40 px-3 py-2 border border-gray-200 rounded-md text-sm text-center text-gray-700 hover:bg-gray-200 transform-gpu hover:scale-105 transition-transform duration-150 ease-out inline-flex items-center justify-center mx-auto sm:mx-0">
+             <i class="fas fa-arrow-left mr-2"></i> Повернутися до каталогу
+           </a>
+         </div>
       </div>
     </div>
   </div>

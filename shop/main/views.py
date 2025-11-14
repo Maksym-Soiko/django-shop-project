@@ -3,6 +3,7 @@ from .models import Product, Category
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
 import re
+from cart.forms import CartAddProductForm
 
 def product_list(request, category_slug=None):
     categories = Category.objects.all()
@@ -83,6 +84,7 @@ def product_detail(request, id, slug):
     related_products = Product.objects.filter(category=product.category).exclude(id=product.id).order_by('-created_at')[:4]
     
     product_promo_codes_dict = request.session.get('product_promo_codes', {})
+    cart_product_form = CartAddProductForm()
     
     return render(request, 'main/product_detail.html', {
         'product': product,
@@ -93,4 +95,5 @@ def product_detail(request, id, slug):
         'rating_distribution': rating_distribution,
         'user_review': user_review,
         'product_promo_codes': product_promo_codes_dict,
+        'cart_product_form': cart_product_form,
     })

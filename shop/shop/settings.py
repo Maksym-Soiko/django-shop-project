@@ -52,6 +52,7 @@ INSTALLED_APPS = [
 	'accounts',
     'reviews',
     'discounts',
+    'cart',
 ]
 
 if DEBUG:
@@ -92,6 +93,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'discounts.context_processors.promo_code_context',
+                'cart.context_processors.cart',
             ],
         },
     },
@@ -197,3 +199,7 @@ MARKDOWNX_MARKDOWN_EXTENSION_CONFIGS = {
         'toc_depth': 3,
     },
 }
+
+# Налаштування сесій
+SESSION_COOKIE_AGE = 86400 # 24 години
+CART_SESSION_ID = 'cart'

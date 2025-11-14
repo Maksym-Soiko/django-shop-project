@@ -1,0 +1,169 @@
+{% extends "main/base.html" %} {% load static %} {% block content %}
+<style>
+.small-number-input::-webkit-outer-spin-button,
+.small-number-input::-webkit-inner-spin-button {
+  width: 18px;
+  height: 18px;
+  transform: scale(0.75);
+  transform-origin: center;
+  margin: 0;
+}
+
+.small-number-input {
+  font-size: 0.875rem;
+  padding-top: 0.35rem;
+  padding-bottom: 0.35rem;
+}
+
+.small-number-input::-moz-focus-inner { border: 0; padding: 0; }
+</style>
+
+<div class="max-w-screen-2xl mx-auto px-6 py-10">
+  <h1 class="text-2xl font-semibold mb-6 flex items-center gap-3">
+    <i class="fas fa-shopping-basket text-teal-600 text-2xl" aria-hidden="true"></i>
+    <span class="leading-none text-teal-600">Ваш кошик</span>
+  </h1>
+
+  {% if cart|length > 0 %}
+  <div class="grid gap-6 lg:grid-cols-3">
+    <div class="lg:col-span-2 bg-white shadow-sm rounded-2xl p-4">
+      <table class="table-fixed w-full">
+        <colgroup>
+          <col style="width:52%">
+          <col style="width:22%">
+          <col style="width:10%">
+          <col style="width:10%">
+          <col style="width:5%">
+        </colgroup>
+        <thead>
+          <tr class="text-sm text-gray-500 border-b">
+            <th class="py-3 text-center align-middle">Товар</th>
+            <th class="py-3 text-center align-middle">Кількість</th>
+            <th class="py-3 text-center align-middle">Ціна</th>
+            <th class="py-3 text-center align-middle">Сума</th>
+            <th class="py-3 text-center align-middle"></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y">
+          {% for item in cart %}
+          <tr class="bg-white hover:bg-slate-50 transition">
+            <td class="py-4 align-top text-left">
+              <div class="flex items-center space-x-4">
+                <img
+                  src="{{ item.product.image.url }}"
+                  alt="{{ item.product.name }}"
+                  class="w-20 h-20 object-cover rounded-lg shadow-sm"
+                />
+                <div>
+                  <a
+                    href="{{ item.product.get_absolute_url }}"
+                    class="text-lg font-medium text-gray-900 hover:underline"
+                  >
+                    {{ item.product.name }}
+                  </a>
+                  <div class="text-sm text-gray-500 mt-1">
+                    {{ item.product.category.name|default:"—" }}
+                  </div>
+                </div>
+              </div>
+            </td>
+
+            <td class="py-4 align-top text-center">
+              <form method="post"
+                    action="{% url 'cart:cart_add' item.product.id %}"
+                    class="flex sm:flex-row flex-col items-center sm:justify-center gap-2">
+                {% csrf_token %}
+                <div class="flex-shrink-0 w-12">
+                  {{ item.update_quantity_form.quantity }}
+                </div>
+                {{ item.update_quantity_form.override }}
+                <button
+                  type="submit"
+                  class="w-full sm:w-auto px-3 py-2 cursor-pointer bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-lg hover:opacity-95 shadow-sm text-sm font-semibold whitespace-nowrap">
+                  Оновити
+                </button>
+              </form>
+            </td>
+ 
+            <td class="py-4 align-top text-center">
+              <span class="font-semibold text-gray-900 text-sm">{{ item.price|floatformat:2 }} грн</span>
+            </td>
+ 
+            <td class="py-4 align-top text-center">
+              <span class="font-semibold text-teal-700">{{ item.total_price|floatformat:2 }} грн</span>
+            </td>
+ 
+
+            <td class="py-4 align-top text-center">
+               <form
+                 method="post"
+                 action="{% url 'cart:cart_remove' item.product.id %}"
+               >
+                 {% csrf_token %}
+                 <button
+                   type="submit"
+                   class="p-2 cursor-pointer text-red-600 hover:bg-red-50 rounded-lg"
+                   title="Видалити"
+                 >
+                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                       d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" />
+                   </svg>
+                 </button>
+               </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+       </table>
+    </div>
+
+    <div class="lg:col-span-1">
+      <div class="bg-white rounded-2xl p-5 shadow-md sticky top-6">
+        <h2 class="text-lg font-semibold mb-4">Підсумок замовлення</h2>
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-gray-600">Кількість товарів:</span>
+          <span class="font-medium text-gray-800">{{ cart|length }}</span>
+        </div>
+        <div class="flex justify-between items-center mb-4">
+          <span class="text-gray-600">Загальна вартість:</span>
+          <span class="font-bold text-2xl text-teal-700">{{ cart.get_total_price|floatformat:2 }} грн</span>
+        </div>
+        <div class="space-y-3">
+          <a href="{% url 'main:product_list' %}" class="block w-full text-center px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-2xl shadow hover:opacity-95">Оформити замовлення</a>
+          <a href="{% url 'main:product_list' %}" class="block w-full text-center px-4 py-3 border border-gray-200 rounded-2xl text-gray-700 hover:bg-gray-50">Продовжити покупки</a>
+          <form method="post" action="{% url 'cart:cart_clear' %}">
+            {% csrf_token %}
+            <button type="submit" class="w-full mt-2 cursor-pointer text-sm text-red-600 hover:underline">Очистити кошик</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% else %}
+  <div class="flex flex-col items-center justify-center py-20">
+    <svg
+      class="w-24 h-24 text-gray-300 mb-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="1.5"
+        d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 7h14l-2-7M10 21a1 1 0 100-2 1 1 0 000 2zm4 0a1 1 0 100-2 1 1 0 000 2z"
+      ></path>
+    </svg>
+    <p class="text-lg font-medium mb-4">Ваш кошик порожній</p>
+    <a
+      href="{% url 'main:product_list' %}"
+      class="inline-block px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-md shadow hover:opacity-95 text-sm"
+      >Перейти до покупок</a
+    >
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

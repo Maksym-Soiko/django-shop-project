@@ -14,7 +14,7 @@ urlpatterns = [
 	path('promo/edit/<int:code_id>/', views.edit_promo_code, name='edit_promo_code'),
 	path('promo/apply/', views.apply_promo_code, name='apply_promo_code'),
 	path('promo/remove/', views.delete_promo_code, name='delete_promo_code'),
-	path('promo/delete/<int:code_id>/', views.delete_promo_code, name='delete_promo_code'),
+	path('promo/remove/<int:code_id>/', views.delete_promo_code, name='delete_promo_code'),
 	path('promo/stats/<int:code_id>/', views.promo_code_stats, name='promo_code_stats'),
 	path('apply-promo-code/', views.apply_promo_code_view, name='apply_promo_code'),
 ]

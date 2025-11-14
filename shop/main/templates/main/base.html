@@ -99,6 +99,16 @@
               {% endif %}
             </nav>
 
+            <a href="{% url 'cart:cart_detail' %}"
+               class="relative flex items-center gap-2 text-gray-700 hover:text-teal-600 hover:bg-teal-50 transition">
+              <i class="fas fa-shopping-cart w-5 h-5"></i>
+              {% if cart|length > 0 %}
+              <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                {{ cart|length }}
+              </span>
+              {% endif %}
+            </a>
+
             <div class="hidden md:flex items-center gap-2 md:ml-6">
               {% if user.is_authenticated %} {% if user.is_staff %}
               <a

@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.admin.views.decorators import staff_member_required
 from django.urls import reverse
@@ -57,50 +58,43 @@ def product_discounts(request, product_id):
 @staff_member_required
 def add_discount(request, product_id):
     product = get_object_or_404(Product, id=product_id)
-
     if request.method == 'POST':
-        form = DiscountForm(request.POST)
-        
+        form = DiscountForm(request.POST, product=product)
         if form.is_valid():
             discount = form.save(commit=False)
             discount.product = product
             discount.save()
-            
             messages.success(request, f"Знижку для '{product.name}' успішно створено.")
             return redirect(product.get_absolute_url())
         else:
             messages.error(request, "Будь ласка, виправте помилки у формі.")
     else:
-        form = DiscountForm()
-
+        form = DiscountForm(product=product)
+    
     return render(request, 'discounts/add_discount.html', {'form': form, 'product': product})
 
 
 @staff_member_required
 def edit_discount(request, discount_id):
-	discount = get_object_or_404(Discount, id=discount_id)
-	product = getattr(discount, 'product', None)
+    discount = get_object_or_404(Discount, id=discount_id)
+    product = getattr(discount, 'product', None)
 
-	if request.method == 'POST':
-		form = DiscountForm(request.POST, instance=discount)
-		if form.is_valid():
-			form.save()
-			if product and hasattr(product, 'get_absolute_url'):
-				return redirect(product.get_absolute_url())
-			try:
-				if product:
-					return redirect(reverse('product_detail', args=[product.id]))
-			except Exception:
-				pass
-			return redirect('/')
-	else:
-		form = DiscountForm(instance=discount)
+    if request.method == 'POST':
+        form = DiscountForm(request.POST, instance=discount, product=product)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Знижку для '{product.name}' оновлено.")
+            if product and hasattr(product, 'get_absolute_url'):
+                return redirect(product.get_absolute_url())
+            return redirect('discounts:promo_code_list')
+    else:
+        form = DiscountForm(instance=discount, product=product)
 
-	return render(request, 'discounts/edit_discount.html', {
-		'form': form,
-		'discount': discount,
-		'product': product,
-	})
+    return render(request, 'discounts/edit_discount.html', {
+        'form': form,
+        'discount': discount,
+        'product': product,
+    })
 
 
 @staff_member_required
@@ -178,6 +172,10 @@ def apply_promo_code(request):
     except PromoCode.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Промокод не знайдений'}, status=404)
 
+    if request.user.is_authenticated:
+        already_used = PromoCodeUsage.objects.filter(promo_code=promo, user=request.user).exists()
+        if already_used:
+            return JsonResponse({'success': False, 'error': 'Ви вже використовували цей промокод.'}, status=400)
     is_valid = True
     if getattr(promo, 'is_active', None) is False:
         is_valid = False
@@ -288,7 +286,9 @@ def apply_promo_code_view(request):
             product = Product.objects.get(id=product_id)
         except Product.DoesNotExist:
             product = None
-    
+
+    form = ApplyPromoCodeForm()
+
     if request.method == 'POST':
         form = ApplyPromoCodeForm(request.POST)
         product_id_post = request.POST.get('product_id')
@@ -297,97 +297,99 @@ def apply_promo_code_view(request):
             promo_code = form.cleaned_data['promo_code']
             promo = form.promo
             
-            existing_usage = PromoCodeUsage.objects.filter(
-                promo_code=promo,
-                user=request.user
-            ).exists()
-            
-            if existing_usage:
-                messages.warning(
-                    request,
-                    f'Ви вже використовували промокод "{promo_code}". '
-                    f'Кожен промокод можна використати тільки один раз.'
-                )
-                if product_id_post:
-                    return redirect(f"{reverse('discounts:apply_promo_code')}?product_id={product_id_post}")
+            if not product_id_post:
+                messages.error(request, 'Оберіть товар для застосування промокоду.')
                 return redirect('discounts:apply_promo_code')
+
+            try:
+                product_obj = Product.objects.get(id=product_id_post)
+            except Product.DoesNotExist:
+                messages.error(request, 'Товар не знайдено.')
+                return redirect('discounts:apply_promo_code')
+
+                # messages.error(request, f'Ви вже використовували промокод "{promo_code}".')
+                # used_promo_codes = PromoCodeUsage.objects.filter(user=request.user).select_related('promo_code').order_by('-used_at')[:5]
+                # current_promo_code = None
+                # product_promo_codes = request.session.get('product_promo_codes', {})
+                # promo_data = product_promo_codes.get(str(product_obj.id))
+                # if promo_data:
+                #     current_promo_code = promo_data.get('code')
+                # context = {
+                #     'form': form,
+                #     'title': 'Застосувати промокод',
+                #     'used_promo_codes': used_promo_codes,
+                #     'current_promo_code': current_promo_code,
+                #     'product': product_obj,
+                # }
+                # return render(request, 'discounts/apply_promo_code.html', context)
             
-            if promo.usage_limit:
-                current_usage_count = PromoCodeUsage.objects.filter(
-                    promo_code=promo
-                ).count()
-                
+            if promo.usage_limit and promo.usage_limit > 0:
+                current_usage_count = PromoCodeUsage.objects.filter(promo_code=promo).count()
                 if current_usage_count >= promo.usage_limit:
                     messages.error(
                         request,
                         f'Промокод "{promo_code}" вичерпав ліміт використань.'
                     )
-                    if product_id_post:
-                        return redirect(f"{reverse('discounts:apply_promo_code')}?product_id={product_id_post}")
-                    return redirect('discounts:apply_promo_code')
-            
-            if 'product_promo_codes' not in request.session:
-                request.session['product_promo_codes'] = {}
-            
-            if product_id_post:
-                try:
-                    product_obj = Product.objects.get(id=product_id_post)
-                    
-                    if hasattr(product_obj, 'get_discounted_price'):
-                        product_price = product_obj.get_discounted_price()
-                    else:
-                        product_price = product_obj.price
-                    
-                    if promo.min_order_amount and product_price < promo.min_order_amount:
-                        messages.error(
-                            request,
-                            f'❌ Промокод "{promo_code}" можна застосувати тільки до товарів вартістю від {promo.min_order_amount:.2f} грн. '
-                            f'Ціна цього товару: {product_price:.2f} грн.'
-                        )
-                        return redirect(f"{reverse('discounts:apply_promo_code')}?product_id={product_id_post}")
-                    
-                    discount_amount = Decimal('0.00')
-                    if promo.discount_type == 'percentage':
-                        discount_amount = product_price * (Decimal(str(promo.value)) / Decimal('100'))
-                    elif promo.discount_type == 'fixed':
-                        discount_amount = min(Decimal(str(promo.value)), product_price)
-                    
-                    request.session['product_promo_codes'][product_id_post] = {
-                        'code': promo_code,
-                        'promo_id': promo.id
-                    }
-                    request.session.modified = True
-                    
-                    PromoCodeUsage.objects.create(
-                        promo_code=promo,
-                        user=request.user,
-                        order_amount=product_price,
-                        discount_amount=discount_amount
-                    )
-                    
-                    messages.success(
-                        request,
-                        f'🎉 Промокод "{promo_code}" успішно застосовано до товару! '
-                        f'Знижка: {discount_amount:.2f} грн. Ціна оновлена з урахуванням знижки.'
-                    )
-                    
                     return redirect(product_obj.get_absolute_url())
-                except Product.DoesNotExist:
-                    messages.error(request, 'Товар не знайдено.')
-                    return redirect('discounts:apply_promo_code')
+
+            if hasattr(product_obj, 'get_discounted_price'):
+                product_price = product_obj.get_discounted_price()
             else:
-                messages.error(request, 'Оберіть товар для застосування промокоду.')
-                return redirect('discounts:apply_promo_code')
+                product_price = product_obj.price
+            
+            if promo.min_order_amount and product_price < promo.min_order_amount:
+                messages.error(
+                    request,
+                    f'❌ Промокод "{promo_code}" можна застосувати тільки до товарів вартістю від {promo.min_order_amount:.2f} грн. '
+                    f'Ціна цього товару: {product_price:.2f} грн.'
+                )
+                return redirect(product_obj.get_absolute_url())
+
+            discount_amount = Decimal('0.00')
+            if promo.discount_type == 'percentage':
+                discount_amount = product_price * (Decimal(str(promo.value)) / Decimal('100'))
+            elif promo.discount_type == 'fixed':
+                discount_amount = min(Decimal(str(promo.value)), product_price)
+            
+            try:
+                PromoCodeUsage.objects.create(
+                    promo_code=promo,
+                    user=request.user,
+                    product=product_obj,
+                    order_amount=product_price,
+                    discount_amount=discount_amount
+                )
+                
+                promo.increment_usage()
+
+            except IntegrityError:
+                messages.warning(
+                    request,
+                    f'Ви вже застосували промокод "{promo_code}" до цього товару.'
+                )
+                return redirect(product_obj.get_absolute_url())
+
+            current_promos = request.session.get('product_promo_codes', {})
+            current_promos[product_id_post] = {
+                'code': promo_code,
+                'promo_id': promo.id
+            }
+            request.session['product_promo_codes'] = current_promos
+            request.session.modified = True
+            
+            messages.success(
+                request,
+                f'🎉 Промокод "{promo_code}" успішно застосовано! '
+                f'Знижка: {discount_amount:.2f} грн.'
+            )
+            return redirect(product_obj.get_absolute_url())
+
         else:
             messages.error(request, 'Помилка при застосуванні промокоду. Перевірте введені дані.')
-    else:
-        form = ApplyPromoCodeForm()
-    
-    used_promo_codes = []
-    if request.user.is_authenticated:
-        used_promo_codes = PromoCodeUsage.objects.filter(
-            user=request.user
-        ).select_related('promo_code').order_by('-used_at')[:5]
+
+    used_promo_codes = PromoCodeUsage.objects.filter(
+        user=request.user
+    ).select_related('promo_code').order_by('-used_at')[:5]
     
     current_promo_code = None
     if product_id:
